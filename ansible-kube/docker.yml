@@ -1,0 +1,47 @@
+- hosts: worker
+  become: yes
+  tasks:
+  - name: install APT Transport HTTPS
+    apt:
+     name: apt-transport-https
+     state: present
+  - name: add Docker apt-key
+    apt_key:
+     url: https://download.docker.com/linux/ubuntu/gpg
+     state: present
+  - name: add Docker' APT repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+      filename: 'docker'
+  - name: install docker-ce
+    apt:
+     name: docker-ce
+     state: present
+     update_cache: true
+  - name: install docker-ce-cli
+    apt:
+     name: docker-ce-cli
+     state: present
+  - name: install containerd.io
+    apt:
+     name: containerd.io
+     state: present
+  - name: change cgroup
+    shell: |
+      cat <<EOF | sudo tee /etc/docker/daemon.json
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"],
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "100m"
+        },
+        "storage-driver": "overlay2"
+      }
+      EOF
+  - name: restart dockerservice
+    ansible.builtin.systemd:
+      state: restarted
+      daemon_reload: yes
+      name: docker
+  
