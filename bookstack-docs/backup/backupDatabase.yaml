@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysqldump
+spec:
+  schedule: 0 0 * * * #backup every 00:00
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 60
+      template:
+        spec:
+          containers:
+          - name: mysqldump
+            image: ghcr.io/apipluspower/mysqldump:latest
+            imagePullPolicy: "Always"
+            env:
+              - name: DB_NAME
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: db1
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: dbhost
+              - name: DB_USER
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: user
+              - name: DB_PASS
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: password
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: backblaze-secrets
+                    key: AWS_ACCESS_KEY_ID
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: backblaze-secrets
+                    key: AWS_SECRET_ACCESS_KEY
+              - name: AWS_BUCKET_NAME
+                valueFrom:
+                  configMapKeyRef:
+                    name: backblaze-config
+                    key: AWS_BUCKET_NAME
+            command:
+              - /bin/sh
+              - -c
+              - |
+                until wget -q --spider http://127.0.0.1:15021/healthz/ready 2>/dev/null; do echo "Waiting for Istio sidecar..."; sleep 3; done;
+                echo \"Sidecar available. Running...\";
+                /dump.sh ;
+                x=$?; wget -q --post-data='' -S -O /dev/null http://127.0.0.1:15020/quitquitquit && exit $x
+          imagePullSecrets:
+             - name: regcred
+          restartPolicy: OnFailure
+

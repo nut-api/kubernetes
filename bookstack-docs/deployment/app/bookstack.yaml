@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bookstack
+  name: bookstack
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: bookstack
+  template:
+    metadata:
+      labels:
+        app: bookstack
+    spec:
+      containers:
+      - env:
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: db1
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: dbhost
+        - name: DB_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: password
+        - name: DB_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: user
+        - name: APP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: appUrl
+        image: solidnerd/bookstack:0.31
+        name: bookstack
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        # readinessProbe:
+        #   httpGet:
+        #     path: /login
+        #     port: 80
+        #   initialDelaySeconds: 5
+        #   timeoutSeconds: 1
+        #   periodSeconds: 15
+        # livenessProbe:
+        #   httpGet:
+        #     path: /login
+        #     port: 80
+        #   initialDelaySeconds: 15
+        #   timeoutSeconds: 1
+        #   periodSeconds: 15
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: uploads
+          mountPath: /var/www/bookstack/public/uploads
+        - name: storage-uploads
+          mountPath: /var/www/bookstack/storage/uploads
+      volumes: 
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+      - name: storage-uploads
+        persistentVolumeClaim:
+          claimName: storage-uploads-pvc
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bookstack
+  name: bookstack
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: bookstack
+  
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookstack
+spec:
+  hosts:
+    -  docs.vongjon.com
+  gateways:
+    - istio-system/gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: bookstack.bookstack.svc.cluster.local
+            port:
+              number: 8080

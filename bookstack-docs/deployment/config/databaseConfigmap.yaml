@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  dbhost: mysql
+  db1: bookstack
+  user: <user>
+  password: <password>
+  rootpass: <rootpass>
+  appUrl: <url>
+kind: ConfigMap
+metadata:
+  name: mysqldump

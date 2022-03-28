@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: mysql
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: mysql
+  template:
+    metadata:
+      labels:
+        service: mysql
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: db1
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: rootpass
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mysqldump
+              key: user
+        image: mysql:5.7.33
+        name: mysql
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: db
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: db-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: mysql
+  name: mysql
+spec:
+  ports:
+  - name: "3306"
+    port: 3306
+    targetPort: 3306
+  selector:
+    service: mysql
+  
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    service: mysql
+  name: db-pvc
+spec:
+  storageClassName: nfs-client
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
