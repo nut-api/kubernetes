@@ -1,0 +1,17 @@
+- name: Copy custom-resources.yaml manifests
+  template:
+    src: custom-resources.yaml
+    dest: /tmp/custom-resources.yaml
+    force: yes
+
+- name: Copy tigera-operator.yaml manifests
+  template:
+    src: tigera-operator.yaml
+    dest: /tmp/tigera-operator.yaml
+    force: yes
+
+- name: Create Calico Deployment
+  shell: kubectl apply -f /tmp/tigera-operator.yaml
+
+- name: Create Calico Deployment
+  shell: kubectl apply -f /tmp/custom-resources.yaml

@@ -1,0 +1,8 @@
+---
+
+docker_version: 20.10.14
+kubernetes_version: v1.24.0
+kubeadm_version: 1.24.0-00
+
+vip_address: 10.1.20.112
+vip_interface: eth0

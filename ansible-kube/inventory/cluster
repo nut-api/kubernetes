@@ -1,0 +1,31 @@
+[k8s_master_primary]
+10.1.20.203 ansible_user=Admin
+
+[k8s_master_replicas]
+10.1.20.204 ansible_user=Admin
+
+[k8s_masters:children]
+k8s_master_primary
+k8s_master_replicas
+
+[k8s_workers]
+#worker1.domain.local
+#worker2.domain.local
+#worker3.domain.local
+
+[k8s_nodes:children]
+k8s_masters
+k8s_workers
+
+[cluster:children]
+k8s_nodes
+
+[masters]
+10.1.20.200 ansible_user=Admin
+10.1.20.201 ansible_user=Admin
+10.1.20.202 ansible_user=Admin
+#[worker]
+#  worker ansible_host=20.212.201.235 ansible_user=azureuser
+
+[all:vars]
+ ansible_python_interpreter=/usr/bin/python3
