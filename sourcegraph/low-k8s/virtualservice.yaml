@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sourcegraph
+spec:
+  hosts:
+    - sourcegraph.vongjon.com
+  gateways:
+    - istio-system/gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: sourcegraph.ns-sourcegraph.svc.cluster.local
+            port:
+              number: 7080

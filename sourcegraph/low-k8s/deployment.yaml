@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sourcegraph
+  name: sourcegraph
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: sourcegraph
+  template:
+    metadata:
+      labels:
+        app: sourcegraph
+    spec:
+      containers:
+      - image: sourcegraph/server:3.38.0
+        name: sourcegraph
+        resources:
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+          limits:
+            cpu: "6"
+            memory: "16Gi"
+        ports:
+        - name: frontend
+          containerPort: 7080
+        - name: grafana
+          containerPort: 3370
+        volumeMounts:
+          - mountPath: /etc/sourcegraph
+            name: config
+          - mountPath: /var/opt/sourcegraph
+            name: data
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: config
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
