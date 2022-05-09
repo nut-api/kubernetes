@@ -1,6 +1,7 @@
-# - import_playbook: docker.yaml
-# - import_playbook: kubeadm-prep.yaml
-# - import_playbook: kube-vip.yaml
-# - import_playbook: kubeadm-init-master.yaml
-# - import_playbook: calico.yaml
+- import_playbook: docker.yaml
+- import_playbook: kubeadm-prep.yaml
+- import_playbook: kube-vip.yaml
+- import_playbook: kubeadm-init-master.yaml
+- import_playbook: calico.yaml
 - import_playbook: kubeadm-join-master.yaml
+- import_playbook: kubeadm-join-worker.yaml

@@ -24,7 +24,7 @@
     kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
 
 - name: Join Master replicas to cluster
-  shell: "{{ kubeadm_join }} --control-plane"
-
-- pause:
-    prompt: "Wait for containers to Pull and install"
+  shell: "{{ kubeadm_join }} --control-plane >> join_master.txt"
+  args:
+   chdir: $HOME
+   creates: join_master.txt
