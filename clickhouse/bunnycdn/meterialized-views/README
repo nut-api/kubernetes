@@ -1,0 +1,45 @@
+```sql
+SELECT
+    LogAttributes['url'] AS url,
+    sum(toUInt64(LogAttributes['bytes_sent'])) AS total_bytes
+FROM otel_logs
+WHERE LogAttributes['bytes_sent'] != ''
+GROUP BY url
+ORDER BY total_bytes DESC
+LIMIT 10
+```
+
+Extract otel_logs to bunny format.
+```sql
+SELECT
+        Body, 
+        Timestamp::DateTime AS Timestamp,
+        ServiceName,
+        LogAttributes['cache_status'] AS CacheStatus,
+        LogAttributes['status_code'] AS StatusCode,
+        LogAttributes['bytes_sent'] AS ByteSent,
+        LogAttributes['pull_zone_id'] AS PullZoneId,
+        LogAttributes['remote_ip'] AS RemoteIp,
+        LogAttributes['referer_url'] AS RefererUrl,
+        LogAttributes['url'] AS Url,
+        LogAttributes['edge_location'] AS EdgeLocation,
+        LogAttributes['user_agent'] AS UserAgent,
+        LogAttributes['unique_request_id'] AS UniqueRequestId,
+        LogAttributes['country_code'] AS CountryCode,
+        SeverityText,
+        SeverityNumber
+FROM otel_logs
+LIMIT 1
+FORMAT Vertical
+```
+
+Expect sum from sample.log
+```bash
+   ┌────────────────Hour─┬─Url───────────────────────────────────────────────────────────────────────────────────────────────┬─TotalBytes─┐
+1. │ 2025-03-24 10:00:00 │ https://apiplus-zone-1.b-cdn.net/                                                                 │       9864 │
+2. │ 2025-03-24 10:00:00 │ https://apiplus-zone-1.b-cdn.net/nutto                                                            │        822 │
+3. │ 2025-03-24 10:00:00 │ https://apiplus-zone-1.b-cdn.net/favicon.ico                                                      │       3292 │
+4. │ 2025-04-24 11:00:00 │ https://apiplus-zone-1.b-cdn.net/bg%2Cf8f8f8-flat%2C750x%2C075%2Cf-pad%2C750x1000%2Cf8f8f8.u4.jpg │     928179 │
+5. │ 2025-03-24 10:00:00 │ https://apiplus-zone-1.b-cdn.net/bg%2Cf8f8f8-flat%2C750x%2C075%2Cf-pad%2C750x1000%2Cf8f8f8.u4.jpg │    1113371 │
+   └─────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────┴────────────┘
+```

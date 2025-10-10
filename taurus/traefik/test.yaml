@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-ingress
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`shop.naaraan.com`)
+      services:
+      - kind: Service
+        name: naaraan
+        port: 5000
+  tls:
+    certResolver: letsencrypt

@@ -5,12 +5,12 @@ metadata:
     service: mysql
   name: db-pvc
 spec:
-  storageClassName: nfs-client
+  # storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 8Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -19,12 +19,12 @@ metadata:
     app: bookstack
   name: uploads-pvc
 spec:
-  storageClassName: nfs-client
+  # storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -33,9 +33,9 @@ metadata:
     app: bookstack
   name: storage-uploads-pvc
 spec:
-  storageClassName: nfs-client
+  # storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi

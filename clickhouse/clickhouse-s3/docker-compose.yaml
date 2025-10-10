@@ -1,0 +1,17 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_USER=user
+      - CLICKHOUSE_PASSWORD=pass
+      - AWS_ACCESS_KEY_ID=004d9a838e5854c000000000d
+      - AWS_SECRET_ACCESS_KEY=K004BhlsOnlnBrYJio9yLPSBrmC6FCw
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse-s3.xml:/etc/clickhouse-server/config.d/clickhouse-s3.xml
+
+volumes:
+  clickhouse-data:

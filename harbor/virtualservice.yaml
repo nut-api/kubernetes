@@ -1,0 +1,61 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  hosts:
+  - "harbor.vongjon.com"
+  gateways:
+  - istio-system/gateway
+  exportTo:
+  - "."
+  - "actions-runner-system"
+  - "istio-system"
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: harbor.harbor.svc.cluster.local
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-svc-harbor
+spec:
+  hosts:
+  - harbor.vongjon.com
+  location: MESH_EXTERNAL
+  ports:
+  - number: 80
+    name: example-http
+    protocol: HTTP
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: harbor-hub-proxy
+  namespace: harbor
+spec:
+  hosts:
+  - "harbor-hub.vongjon.com"
+  gateways:
+  - istio-system/gateway
+  exportTo:
+  - "."
+  - "actions-runner-system"
+  - "istio-system"
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: nginx.harbor.svc.cluster.local
+        port:
+          number: 80

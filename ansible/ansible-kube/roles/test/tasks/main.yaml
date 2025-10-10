@@ -1,0 +1,20 @@
+
+
+- name: Upgrading control plane nodes (primary) {{ansible_hostname}}
+  shell: echo first
+  when: "'k8s_master_primary' in group_names"
+  register: test
+
+- name: Upgrading control plane nodes {{kubernetes_version}} {{ansible_hostname}} {{next}}
+  shell: echo second
+  when: "'k8s_master_primary' not in group_names"
+
+- name: test run command
+  shell: kubectl get node {{ansible_hostname}}
+  delegate_to: 127.0.0.1
+  become: false
+  register: test
+
+- name: msg
+  debug:
+    msg: "{{ test.stdout }}"

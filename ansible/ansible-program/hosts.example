@@ -1,0 +1,14 @@
+[machines]
+# 10.1.20.200 ansible_user=Admin
+10.1.10.102
+
+[machines:vars]
+ansible_user=local
+bind_user=Administrator
+bind_user_password=<password>
+ad_endpoint=10.1.20.5
+ad_realm=AD.APIPLUSTECH.COM
+ad_realm_domain=ad.apiplustech.com
+ad_realm_ou=CN=Computers,DC=ad,DC=apiplustech,DC=com
+nas_endpoint=truenas.ad.apiplustech.com
+nas_location=/mnt/pool/share-dir/&

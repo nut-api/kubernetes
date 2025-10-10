@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tracing-vs
+spec:
+  hosts:
+  - "tracing.dicast.io"
+  gateways:
+  - istio-system/gateway
+  http:
+  - route:
+    - destination:
+        host: tracing.istio-system.svc.cluster.local
+        port:
+          number: 80

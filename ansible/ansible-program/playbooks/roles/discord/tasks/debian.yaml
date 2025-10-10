@@ -1,0 +1,36 @@
+- name: check discord command
+  command: which Discord
+  register: discord_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download Discord
+    get_url:
+      url="https://dl.discordapp.net/apps/linux/0.0.24/discord-0.0.24.tar.gz"
+      dest="/opt/discord-0.0.24.tar.gz"
+
+  - name: Extract the downloaded file
+    command: tar -xvzf /opt/discord-0.0.24.tar.gz -C /opt
+
+  - name: Remove discord's packaged
+    ansible.builtin.file:
+      path: /opt/discord-0.0.24.tar.gz
+      state: absent
+
+  - name: Create a symbolic link
+    ansible.builtin.file:
+      src: /opt/Discord/Discord
+      dest: /usr/bin/Discord
+      owner: root
+      group: root
+      state: link
+
+  - name: Copy Discord desktop icon
+    template:
+      src: discord.desktop.j2
+      dest: /usr/share/applications/discord.desktop
+      owner: root
+      group: root
+      mode: 0644
+  when: discord_check.rc != 0

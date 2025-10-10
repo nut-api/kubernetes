@@ -1,0 +1,22 @@
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 1
+
+server:
+  replicas: 1
+  extensions:
+    # -- Enable support for Argo CD extensions
+    enabled: true
+    extensionList:
+    - name: extension-rollouts
+      env:
+      - name: EXTENSION_URL
+        value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicaCount: 1

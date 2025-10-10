@@ -1,0 +1,123 @@
+- name: Add Kubernetes apt repo
+  block:
+  - name: Create keyrings directory if it does not exist
+    ansible.builtin.file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+
+  - name: Add apt key
+    apt_key:
+      url: https://pkgs.k8s.io/core:/stable:/{{kubeadm_version}}/deb/Release.key
+      keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      state: present
+
+  - name: Remove old repo list file
+    ansible.builtin.file:
+      path: /etc/apt/sources.list.d/kubernetes.list
+      state: absent
+
+  - name: Add Kubernetes's apt repository
+    apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{kubeadm_version}}/deb/ /
+      state: present
+      filename: kubernetes
+
+- name: Unhold kubeadm
+  dpkg_selections:
+    name: kubeadm
+    selection: install
+
+- name: Install kubeadm {{kubeadm_version}}
+  apt:
+    name: kubeadm=1.30.3-1.1
+    state: present
+    force: yes
+    update_cache: yes
+
+- name: Hold kubeadm
+  dpkg_selections:
+    name: kubeadm
+    selection: hold
+
+- name: Upgrading control plane nodes {{kubernetes_version}} (primary)
+  shell: kubeadm upgrade apply {{kubernetes_version}} -y  >> upgrade_cluster_to_{{kubernetes_version}}.txt
+  when: "'k8s_master_primary' in group_names"
+  args:
+    chdir: $HOME
+    creates: upgrade_cluster_to_{{kubernetes_version}}.txt
+
+- name: Upgrading control plane nodes {{kubernetes_version}}
+  shell: kubeadm upgrade node  >> upgrade_cluster_to_{{kubernetes_version}}.txt
+  when: "'k8s_master_primary' not in group_names"
+  args:
+    chdir: $HOME
+    creates: upgrade_cluster_to_{{kubernetes_version}}.txt
+
+- name: wait
+  command: sleep 20
+
+- name: Drain {{ansible_hostname}} node
+  shell: kubectl drain {{ansible_hostname}} --ignore-daemonsets
+  delegate_to: 127.0.0.1
+  become: false
+  register: drain
+  ignore_errors: true
+
+- name: stdout
+  debug:
+    msg: "{{ drain.stdout }}"
+
+- name: wait
+  command: sleep 20
+
+- name: Unhold kubelet
+  dpkg_selections:
+    name: kubelet
+    selection: install
+
+- name: Unhold kubectl
+  dpkg_selections:
+    name: kubectl
+    selection: install
+
+
+- name: Install kubelet {{kubeadm_version}}
+  apt:
+    name: kubelet=1.30.3-1.1
+    state: present
+
+- name: Install kubectl {{kubeadm_version}}
+  apt:
+    name: kubectl=1.30.3-1.1
+    state: present
+    force: yes
+
+- name: Hold kubelet
+  dpkg_selections:
+    name: kubelet
+    selection: hold
+
+- name: Hold kubectl
+  dpkg_selections:
+    name: kubectl
+    selection: hold
+
+- name: Restart service kubelet with daemon reload.
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: kubelet
+
+- name: wait
+  command: sleep 20
+
+- name: Uncordon {{ansible_hostname}} node
+  shell: kubectl uncordon {{ansible_hostname}}
+  delegate_to: 127.0.0.1
+  become: false
+  register: uncordon
+
+- name: stdout
+  debug:
+    msg: "{{ uncordon.stdout }}"

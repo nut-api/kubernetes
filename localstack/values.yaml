@@ -1,0 +1,21 @@
+service:
+  type: ClusterIP
+enableStartupScripts: true
+startupScriptContent: |
+  #!/bin/bash
+  awslocal s3 mb s3://apiplus-public && awslocal s3 mb s3://apiplus-private
+livenessProbe:
+  timeoutSeconds: 3
+readinessProbe:
+  timeoutSeconds: 3
+#image:
+#  tag: 3.3.0
+extraEnvVars:
+  - name: AWS_ACCESS_KEY_ID
+    value: "test"
+  - name: AWS_SECRET_ACCESS_KEY
+    value: "test"
+  - name: DEBUG
+    value: "1"
+  - name: ENFORCE_IAM
+    value: "1"

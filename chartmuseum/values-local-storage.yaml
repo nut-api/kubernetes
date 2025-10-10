@@ -1,0 +1,10 @@
+replicaCount: 1
+env:
+  open:
+    DISABLE_API: false # important flag
+  existingSecret: helm-repo-1
+  existingSecretMappings:
+    BASIC_AUTH_USER: user
+    BASIC_AUTH_PASS: pass
+persistence:
+  enabled: true

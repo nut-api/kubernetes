@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - image: minio/minio:RELEASE.2024-08-26T15-33-07Z-cpuv1
+        name: minio
+        command:
+        - /bin/bash
+        - -c
+        - |
+          minio server /data --console-address :9001
+        env:
+        - name: MINIO_ROOT_USER
+          value: admin
+        - name: MINIO_ROOT_PASSWORD
+          value: admin1234
+        - name: MINIO_DOMAIN
+          value: s3.digisense.test
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+            scheme: HTTP
+        volumeMounts:
+        - mountPath: /data
+          name: minio-storage
+      - image: minio/mc:RELEASE.2024-08-26T10-49-58Z-cpuv1
+        name: minio-init
+        command:
+        - /bin/bash
+        - -c
+        - |
+          until mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; do sleep 2; done;
+          mc mb myminio/apiplus-public;
+          mc mb myminio/apiplus-private;
+          mc anonymous set download myminio/apiplus-public;
+          while true; do sleep 30; done;
+        env:
+        - name: MINIO_ROOT_USER
+          value: admin
+        - name: MINIO_ROOT_PASSWORD
+          value: admin1234
+      volumes:
+      - name: minio-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  ports:
+  - name: tcp-api
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: tcp-ui
+    port: 9001
+    protocol: TCP
+    targetPort: 9001
+  selector:
+    app: minio
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: s3-minio
+spec:
+  hosts:
+  - "s3.digisense.test"
+  - "*.s3.digisense.test"
+  gateways:
+  - mesh
+  http:
+  - route:
+    - destination:
+        host: minio.actions-runner-system.svc.cluster.local
+        port:
+          number: 9000
+  tls:
+  - match:
+    - sniHosts:
+      - s3.digisense.test
+    route:
+    - destination:
+        host: minio.actions-runner-system.svc.cluster.local
+        port:
+          number: 9000
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: minio
+spec:
+  hosts:
+  - s3.digisense.test
+  ports:
+  - name: https
+    number: 443
+    protocol: HTTPS
+  - name: http
+    number: 80
+    protocol: HTTP
+  resolution: STATIC

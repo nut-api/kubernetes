@@ -1,0 +1,61 @@
+# No use, just for reference
+
+redis-ha:
+  enabled: true
+
+controller:
+  replicas: 1
+
+server:
+  replicas: 1
+
+configs:
+  params:
+    server.insecure: true
+  cm:
+    url: "https://argocd.vongjon.com"
+    dex.config: |
+      connectors:
+      - type: ldap
+        name: ActiveDirectory
+        id: ldap
+        config:
+          host: 10.1.20.5
+          # No TLS for this setup.
+          insecureNoSSL: true
+          insecureSkipVerify: true
+          # This would normally be a read-only user.
+          bindDN: "cn=sync sync,ou=User,ou=Devops,dc=ad,dc=apiplustech,dc=com"
+          bindPW: "12345678"
+          usernamePrompt: Email Address
+          userSearch:
+            baseDN: dc=ad,dc=apiplustech,dc=com
+            filter: "(objectClass=person)"
+            username: mail
+            # "DN" (case sensitive) is a special attribute name. It indicates that
+            # this value should be taken from the entity's DN not an attribute on
+            # the entity.
+            idAttr: DN
+            emailAttr: mail
+            nameAttr: cn
+          groupSearch:
+            baseDN: dc=ad,dc=apiplustech,dc=com
+            filter: "(objectClass=group)"
+            userMatchers:
+            # A user is a member of a group when their DN matches
+            # the value of a "member" attribute on the group entity.
+            - userAttr: DN
+              groupAttr: member
+            # The group name should be the "cn" value.
+            nameAttr: cn
+  rbac:
+    policy.default: role:none
+    scopes: '[groups, email]'
+    policy.csv: |
+      p, role:none, *, *, */*, deny
+      g, Staging Admins, role:admin
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicaCount: 1

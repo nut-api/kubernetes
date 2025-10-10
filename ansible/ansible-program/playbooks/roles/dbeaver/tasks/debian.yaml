@@ -1,0 +1,29 @@
+  - name: Install Java (OpenJDK)
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - default-jdk
+
+  - name: add Dbeaver apt-key
+    apt_key:
+     url: https://dbeaver.io/debs/dbeaver.gpg.key
+     state: present
+
+  - name: add Dbeaver APT repository
+    apt_repository:
+      repo: deb https://dbeaver.io/debs/dbeaver-ce /
+      state: present
+      filename: 'dbeaver'
+      update_cache: true
+
+  - name: Install Dbeaver
+    apt: 
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - dbeaver-ce

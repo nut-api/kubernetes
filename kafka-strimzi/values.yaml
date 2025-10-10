@@ -1,0 +1,6 @@
+extraEnvs:
+- name: KUBERNETES_SERVICE_DNS_DOMAIN
+  value: cluster.local
+watchNamespaces:
+- main
+- stag-fast

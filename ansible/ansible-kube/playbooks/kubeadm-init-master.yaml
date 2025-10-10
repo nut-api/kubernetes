@@ -1,0 +1,4 @@
+- hosts: k8s_master_primary
+  become: yes
+  roles:
+    - kubeadm-init-master

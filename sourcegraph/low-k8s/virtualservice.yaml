@@ -13,6 +13,6 @@ spec:
             prefix: /
       route:
         - destination:
-            host: sourcegraph.ns-sourcegraph.svc.cluster.local
+            host: sourcegraph.sourcegraph.svc.cluster.local
             port:
               number: 7080

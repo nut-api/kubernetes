@@ -1,0 +1,5 @@
+- hosts: machines
+  become: true
+  roles:
+    - join-ad
+    # - share-dir

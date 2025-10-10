@@ -1,0 +1,14 @@
+proxy:
+  enabled: true
+  remoteurl: https://registry-1.docker.io
+  username: ""
+  password: ""
+garbageCollect:
+  enabled: true
+  schedule: "0 0 * * 6"
+replicaCount: 1
+tolerations:
+- key: "runner"
+  operator: "Equal"
+  value: "builder"
+  effect: "NoSchedule"

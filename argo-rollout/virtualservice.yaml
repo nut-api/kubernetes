@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: rollouts-demo
+spec:
+  hosts:
+  - "demo.example.com"
+  gateways:
+  - istio-system/gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: rollouts-demo.main.svc.cluster.local
+        subset: canary
+        port:
+          number: 8080
+      weight: 0
+    - destination:
+        host: rollouts-demo.main.svc.cluster.local
+        subset: stable
+        port:
+          number: 8080
+      weight: 100

@@ -70,17 +70,3 @@ spec:
   selector:
     service: mysql
   
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    service: mysql
-  name: db-pvc
-spec:
-  storageClassName: nfs-client
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi

@@ -1,0 +1,8 @@
+- include_role:
+    name: gantsign.visual-studio-code # https://github.com/gantsign/ansible-role-visual-studio-code
+  when: ansible_os_family == 'Debian'
+  tags: package
+
+- include_tasks: darwin.yaml
+  when: ansible_os_family == 'Darwin'
+  tags: package

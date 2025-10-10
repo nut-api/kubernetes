@@ -1,0 +1,142 @@
+fullnameOverride: prometheus
+grafana:
+  enabled: true
+  defaultDashboardsTimezone: utc
+  # Grafana admin Login Password
+  adminPassword: prom-operator
+
+  podAnnotations:
+    vault.hashicorp.com/agent-inject: 'true'
+    vault.hashicorp.com/agent-inject-status: 'update'
+    vault.hashicorp.com/role: "monitoring" #k8s role
+    vault.hashicorp.com/agent-inject-secret-config: 'secret/data/monitoring' # Secret location
+    vault.hashicorp.com/agent-inject-template-config: |
+      {{ with secret "secret/data/monitoring" -}}
+        export GF_AUTH_AZUREAD_CLIENT_ID={{ .Data.data.GF_AUTH_AZUREAD_CLIENT_ID }}
+        export GF_AUTH_AZUREAD_CLIENT_SECRET={{ .Data.data.GF_AUTH_AZUREAD_CLIENT_SECRET }}
+      {{- end }}
+    traffic.sidecar.istio.io/excludeOutboundPorts: "8200"
+    vault.hashicorp.com/agent-init-first: "true"
+
+  command:
+  - "sh"
+  - "-c"
+  - "source /vault/secrets/config && /run.sh"
+
+  sidecar:
+    alerts:
+      label: grafana_alert
+      enabled: true
+      searchNamespace: ALL
+      labelValue: "1"
+    dashboards:
+      enabled: true
+      label: grafana_dashboard # Label for automatic discovery by sidecar
+      labelValue: "1"
+      multicluster:
+        global:
+          enabled: true
+        etcd:
+          enabled: true
+      provider:
+        allowUiUpdates: true
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      uid: prometheus
+      createPrometheusReplicasDatasources: false
+      label: grafana_datasource
+      labelValue: "1"
+  grafana.ini:
+    paths:
+      data: /var/lib/grafana/
+      logs: /var/log/grafana
+      plugins: /var/lib/grafana/plugins
+      provisioning: /etc/grafana/provisioning
+    analytics:
+      check_for_updates: true
+    log:
+      mode: console
+    grafana_net:
+      url: https://grafana.net
+    server:
+      root_url: https://grafana.vongjon.com
+    auth.azuread:
+      name: Azure AD
+      enabled: true
+      allow_sign_up: true
+      auto_login: false
+      # client_id: <from-vault>
+      # client_secret: <from-vault>
+      scopes: openid email profile
+      auth_url: https://login.microsoftonline.com/b113961f-7d2b-4e69-b9a7-e4473fc1d8a4/oauth2/v2.0/authorize
+      token_url: https://login.microsoftonline.com/b113961f-7d2b-4e69-b9a7-e4473fc1d8a4/oauth2/v2.0/token
+      allowed_domains: apiplustech.com
+      # allowed_groups:
+      role_attribute_strict: false
+      allow_assign_grafana_admin: false
+      skip_org_role_sync: false
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 3
+    serviceMonitorSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+    - job_name: 'istiod'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - istio-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name] # Scrape config for Istio
+        action: keep
+        regex: istiod;http-monitoring
+    - job_name: 'envoy-stats'
+      metrics_path: /stats/prometheus
+      kubernetes_sd_configs:
+      - role: pod
+
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        action: keep
+        regex: '.*-envoy-prom'
+
+    - job_name: 'crunchy-postgres-exporter'
+      kubernetes_sd_configs:
+      - role: pod
+
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_crunchy_postgres_exporter, __meta_kubernetes_pod_label_crunchy_postgres_exporter]
+        action: keep
+        regex: true
+        separator: ""
+      - source_labels: [__meta_kubernetes_pod_container_port_number]
+        action: keep
+        regex: 9187
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_cluster, __meta_kubernetes_pod_label_pg_cluster]
+        target_label: cluster
+        separator: ""
+        replacement: '$1'
+      - source_labels: [__meta_kubernetes_namespace, cluster]
+        target_label: pg_cluster
+        separator: ":"
+        replacement: '$1$2'
+      - source_labels: [__meta_kubernetes_pod_ip]
+        target_label: ip
+        replacement: '$1'
+      - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_instance, __meta_kubernetes_pod_label_deployment_name]
+        target_label: deployment
+        replacement: '$1'
+        separator: ""
+      - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_role, __meta_kubernetes_pod_label_role]
+        target_label: role
+        replacement: '$1'
+        separator: ""
+

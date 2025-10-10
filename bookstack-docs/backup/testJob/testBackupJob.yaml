@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: test-backblaze-backup
 spec:
-  schedule: 40 * * * *
+  schedule: 05 * * * *
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: 60
@@ -25,15 +25,12 @@ spec:
                     name: mysqldump
                     key: dbhost
               - name: DB_USER
-                valueFrom:
-                  configMapKeyRef:
-                    name: mysqldump
-                    key: user
+                value: "root"
               - name: DB_PASS
                 valueFrom:
                   configMapKeyRef:
                     name: mysqldump
-                    key: password
+                    key: rootpass
               - name: AWS_ACCESS_KEY_ID
                 valueFrom:
                   secretKeyRef:

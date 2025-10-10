@@ -1,0 +1,21 @@
+global:
+  istiod:
+    enableAnalysis: true
+  proxy:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+meshConfig:
+  defaultConfig:
+    proxyMetadata:
+      ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+      ISTIO_META_DNS_CAPTURE: "true"
+pilot:
+  env:
+    PILOT_ENABLE_CONFIG_DISTRIBUTION_TRACKING: true
+    PILOT_ENABLE_STATUS: true
+  resources:
+    requests:
+      memory: 128Mi
+  traceSampling: 100

@@ -1,0 +1,82 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: test-runner
+spec:
+  dockerMTU: 1450
+  organization: "apiplustech"
+  labels:
+  - k8s
+  selector:
+    matchLabels:
+      app: test-runner
+  serviceName: test-runner
+  template:
+    metadata:
+      labels:
+        app: test-runner
+    spec:
+      containers:
+      - name: runner
+        image: ghcr.io/apiplustech/actions-runner:latest
+        resources:
+          limits:
+            cpu: "8"
+            memory: "4Gi"
+          requests:
+            cpu: "100m"
+            memory: "1Gi"
+        env:
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+        - name: STARTUP_DELAY_IN_SECONDS
+          value: "3"
+        - name: GOMODCACHE
+          value: "/home/runner/.cache/go-mod"
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+        volumeMounts:
+        - name: cache
+          mountPath: "/home/runner/.cache"
+        securityContext:
+          privileged: true # Enable this if you are not using `dockerdWithinRunnerContainer` OR  you need to run a job that require privilege
+      - name: docker
+        image: docker:27.3.1-dind
+        resources:
+          limits:
+            cpu: "8"
+            memory: "4Gi"
+          requests:
+            cpu: "100m"
+            memory: "1Gi"
+        env:
+        # TODO: Once this issue is fixed (https://github.com/actions/actions-runner-controller/issues/3159),
+        # we can switch to containerMode.type=dind and keep only the "runner" container specs and remove the "dind" container, init containers and volumes parts from the values.
+        - name: DOCKER_IPTABLES_LEGACY
+          value: "1"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/docker/daemon.json
+          name: daemon-config-volume
+          subPath: daemon.json
+      volumes:
+      - name: daemon-config-volume
+        configMap:
+          name: daemon-cm
+          items:
+          - key: daemon.json
+            path: daemon.json
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: cache
+    spec:
+      storageClassName: arc-go-cache
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+

@@ -1,0 +1,6 @@
+secrets:
+  htpasswd: admin:$2y$05$j5MKFYuepumb1MesN1mcJOxo.nS/BKeX2vVQQ6tcdjQnEfwpmQsBi
+garbageCollect:
+  enabled: true
+  schedule: "0 0 * * 6"
+

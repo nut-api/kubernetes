@@ -1,0 +1,26 @@
+- name: check mkcert command
+  command: which mkcert
+  register: mkcert_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download mkcert
+    get_url:
+      url="https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+      dest="/opt/mkcert"
+
+  - name: Change permissions
+    ansible.builtin.file:
+      path: /opt/mkcert
+      mode: '0755'
+
+  - name: Create a symbolic link
+    ansible.builtin.file:
+      src: /opt/mkcert
+      dest: /usr/local/bin/mkcert
+      owner: root
+      group: root
+      state: link
+  when: mkcert_check.rc != 0
+  

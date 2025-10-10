@@ -1,0 +1,11 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+configMapGenerator:
+- name: grafana-alerting
+  files:
+  - grafana-alerts.yaml
+  - contact-points.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_alert: "1"

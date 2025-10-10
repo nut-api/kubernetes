@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-subscriber
+  labels:
+    app: go-subscriber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-subscriber
+  template:
+    metadata:
+      labels:
+        app: go-subscriber
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "go-subscriber"
+        dapr.io/app-port: "8000"
+    spec:
+      containers:
+      - name: go-subscriber
+        image: registry.vongjon.com/go-dapr
+        imagePullPolicy: Always
+        command:
+          - /bin/bash
+          - -c
+          - |
+            /go/app/test
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+        - name: private-repo

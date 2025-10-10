@@ -5,6 +5,7 @@ PERSISTANT_VOLUME=./deployment/volume/persistantVolume.yaml
 PERSISTANT_VOLUME_CLAIM=./deployment/volume/persistantVolumeClaim.yaml
 
 CONFIGMAP_DATABASE=./deployment/config/databaseConfigmap.yaml
+CONFIGMAP_ENV=./deployment/config/.env
 SERCERT_BACKBLAZE=./backup/backblazeSecrets.yaml
 
 JOB_BACKUP=./backup/backupDatabase.yaml
@@ -31,6 +32,7 @@ up-restore-app:
 up-config:
 	kubectl apply -f $(CONFIGMAP_DATABASE)
 	kubectl apply -f $(SERCERT_BACKBLAZE)
+	kubectl create configmap env-config --from-file=$(CONFIGMAP_ENV)
 
 down-app-all:
 	kubectl delete -f $(JOB_BACKUP)	

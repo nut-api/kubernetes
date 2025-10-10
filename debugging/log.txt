@@ -1,0 +1,42 @@
+Localhost Iperf throughput test on Node k8s-node-01: 65.6 Gbits/sec
+Localhost NetPerf TCP_RR test on Node k8s-node-01 (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 15,53,98,38695.85,Trans/s
+Localhost NetPerf TCP_CRR test on Node k8s-node-01 (HTTP API like transaction rate): 25848.70,Trans/s
+Localhost Fortio using HTTP 1.0 on Node k8s-node-01: 0.000522779, 0.000905909, 0.000992113,  8777.9 qps
+Localhost Fortio using HTTP 1.1 on Node k8s-node-01: 0.000507099, 0.000901579, 0.000990337,  22260.1 qps
+Localhost Fortio using GRPC on Node k8s-node-01: 0.000514346, 0.000904674, 0.000992498,  5405.8 qps
+Localhost Iperf throughput test on POD netperf-pod-4htxb: 78.6 Gbits/sec
+Localhost NetPerf TCP_RR test on POD netperf-pod-4htxb (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 8,19,48,89811.12,Trans/s
+Localhost NetPerf TCP_CRR test on POD netperf-pod-4htxb (HTTP API like transaction rate): 32725.22,Trans/s
+Localhost Fortio using HTTP 1.0 on POD netperf-pod-4htxb: 0.000517446, 0.000903607, 0.000990493,  9848.6 qps
+Localhost Fortio using HTTP 1.1 on POD netperf-pod-4htxb: 0.000505676, 0.000901225, 0.000990223,  30967.1 qps
+Localhost Fortio using GRPC on POD netperf-pod-4htxb: 0.00051218, 0.000903196, 0.000991175,  8744.0 qps
+Localhost Iperf throughput test on POD netperf-pod-86b5d66988-25srs: 81.0 Gbits/sec
+Localhost NetPerf TCP_RR test on POD netperf-pod-86b5d66988-25srs (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 8,19,59,87079.50,Trans/s
+Localhost NetPerf TCP_CRR test on POD netperf-pod-86b5d66988-25srs (HTTP API like transaction rate): 36631.91,Trans/s
+Localhost Fortio using HTTP 1.0 on POD netperf-pod-86b5d66988-25srs: 0.000517663, 0.00090402, 0.00099095,  8718.4 qps
+Localhost Fortio using HTTP 1.1 on POD netperf-pod-86b5d66988-25srs: 0.000505723, 0.000901248, 0.000990241,  22901.7 qps
+Localhost Fortio using GRPC on POD netperf-pod-86b5d66988-25srs: 0.000512074, 0.000902881, 0.000990813,  10055.4 qps
+Localhost Iperf throughput test between POD netperf-pod-4htxb and it's Node: k8s-node-01: 40.0 Gbits/sec
+Localhost NetPerf TCP_RR test between POD netperf-pod-4htxb and it's Node: k8s-node-01 (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 22,33,79,38473.73,Trans/s
+Localhost NetPerf TCP_CRR test between POD netperf-pod-4htxb and it's Node: k8s-node-01(HTTP API like transaction rate): 6547.33,Trans/s
+Localhost Fortio using HTTP 1.0 between POD netperf-pod-4htxb and it's Node: k8s-node-01: 0.000575923, 0.000948082, 0.00181016,  3020.2 qps
+Localhost Fortio using HTTP 1.1 between POD netperf-pod-4htxb and it's Node: k8s-node-01: 0.000532716, 0.000906972, 0.000991179,  9603.7 qps
+Localhost Fortio using GRPC between POD netperf-pod-4htxb and it's Node: k8s-node-01: 0.000521387, 0.000906806, 0.000993526,  4266.5 qps
+Localhost Iperf throughput test between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01: 38.6 Gbits/sec
+Localhost NetPerf TCP_RR test between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01 (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 22,62,177,29292.01,Trans/s
+Localhost NetPerf TCP_CRR test between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01(HTTP API like transaction rate): 7974.91,Trans/s
+Localhost Fortio using HTTP 1.0 between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01: 0.000573505, 0.000944663, 0.00183621,  3084.2 qps
+Localhost Fortio using HTTP 1.1 between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01: 0.000533968, 0.000909669, 0.000994202,  7315.5 qps
+Localhost Fortio using GRPC between POD netperf-pod-86b5d66988-25srs and it's Node: k8s-node-01: 0.000521034, 0.000906671, 0.000993439,  5946.8 qps
+Localhost Iperf throughput test between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5: 37.8 Gbits/sec
+Localhost NetPerf TCP_RR test between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5 (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 0,0,0,0.00,Trans/s
+Localhost NetPerf TCP_CRR test between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5(HTTP API like transaction rate): 236.49,Trans/s
+Localhost Fortio using HTTP 1.0 between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5: 0.00207143, 0.0051, 1.04058,  21.3 qps
+Localhost Fortio using HTTP 1.1 between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5: 0.000598338, 0.000976583, 0.00195501,  2598.1 qps
+Localhost Fortio using GRPC between POD netperf-pod-86b5d66988-25srs and POD netperf-pod-86b5d66988-2v7m5: 0.00058349, 0.000947553, 0.00185105,  3113.3 qps
+Localhost Iperf throughput test between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs: 38.7 Gbits/sec
+Localhost NetPerf TCP_RR test between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs (lantency 50,90 and 99 percentiles in us and DB like transaction rate): 40,121,272,16486.62,Trans/s
+Localhost NetPerf TCP_CRR test between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs(HTTP API like transaction rate): 3730.88,Trans/s
+Localhost Fortio using HTTP 1.0 between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs: 0.000626388, 0.00108208, 0.00264282,  2067.1 qps
+Localhost Fortio using HTTP 1.1 between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs: 0.000597086, 0.000972393, 0.00194627,  2513.9 qps
+Localhost Fortio using GRPC between POD netperf-pod-4htxb and POD netperf-pod-86b5d66988-25srs: 0.000580445, 0.000945652, 0.00193048,  3495.9 qps

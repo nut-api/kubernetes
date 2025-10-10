@@ -1,0 +1,5 @@
+name: github
+label: "GitHub"
+app_id: 'ea38610cd068a8584817'
+app_secret: '9e7c7479d29a6c39989a3aefdab0a45b341f36bb'
+args: { scope: "user:email" }

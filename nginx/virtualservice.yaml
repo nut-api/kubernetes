@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nginx
+spec:
+  hosts:
+  - "nginx.digisense.dev"
+  gateways:
+  - istio-system/gateway
+  - mesh
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: nginx.dev.svc.cluster.local
+        port:
+          number: 80

@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - image: minio/minio:latest
+        name: minio
+        command:
+        - /bin/bash
+        - -c
+        - |
+          minio server /data --console-address :9001
+        env:
+        - name: MINIO_ROOT_USER
+          value: admin
+        - name: MINIO_ROOT_PASSWORD
+          value: admin1234
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+            scheme: HTTP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  ports:
+  - name: tcp-api
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: tcp-ui
+    port: 9001
+    protocol: TCP
+    targetPort: 9001
+  selector:
+    app: minio
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: s3-minio
+spec:
+  hosts:
+    - "s3.digisense.dev"
+  gateways:
+    - mesh
+    - istio-system/gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: minio.default.svc.cluster.local
+            port:
+              number: 9001
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-init
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      containers:
+      - image: minio/mc:latest
+        name: minio-init
+        command:
+        - /bin/bash
+        - -c
+        - |
+          until mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; do sleep 2; done;
+          mc mb myminio/apiplus-public;
+          mc mb myminio/apiplus-private;
+          mc anonymous set download myminio/apiplus-public;
+        env:
+        - name: MINIO_ROOT_USER
+          value: admin 
+        - name: MINIO_ROOT_PASSWORD
+          value: admin1234
+      restartPolicy: Never

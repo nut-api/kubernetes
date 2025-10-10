@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gitlab-passthrough-ssl
+spec:
+  hosts:
+    - minio.vongjon.com
+    - registry.vongjon.com
+    - gitlab.vongjon.com
+  gateways:
+    - istio-system/gateway
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - minio.vongjon.com
+      - registry.vongjon.com
+      - gitlab.vongjon.com
+    route:
+      - destination:
+          host: gitlab-nginx-ingress-controller.gitlab.svc.cluster.local

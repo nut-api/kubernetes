@@ -1,0 +1,23 @@
+- name: Check if nvim is installed
+  command: dpkg-query -W neovim
+  register: nvim_check_deb
+  failed_when: nvim_check_deb.rc > 1
+  changed_when: nvim_check_deb.rc == 1
+
+- name: Download nvim
+  get_url: 
+    url="https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.deb"
+    dest="/opt/nvim-linux64.deb"
+  when: nvim_check_deb.rc == 1
+
+- name: Install nvim
+  ansible.builtin.apt:
+    deb: /opt/nvim-linux64.deb
+  when: nvim_check_deb.rc == 1
+
+
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /opt/nvim-linux64.deb
+    state: absent
+  when: nvim_check_deb.rc == 1

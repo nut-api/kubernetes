@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "script-job"
+spec:
+  template:
+    metadata:
+      name: "script-job"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: runscript
+        image: curlimages/curl
+        command:
+        - /bin/sh
+        - -c
+        - |
+          /tmp/script.sh
+        volumeMounts:
+        - mountPath: "/tmp/"
+          name: script
+      volumes:
+      - name: "script"
+        configMap:
+          name: script
+          defaultMode: 0755

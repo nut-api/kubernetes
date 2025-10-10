@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: load-script
+data:
+  load.js: |
+    import http from 'k6/http';
+    import {sleep} from 'k6';
+  
+    export const options = {
+      stages: [
+        { duration: '1m', target: 50 },
+        { duration: '1m', target: 50 }, 
+        { duration: '1m', target: 100 }, 
+        { duration: '1m', target: 100 }, 
+        { duration: '1m', target: 150 }, 
+        { duration: '1m', target: 150 }, 
+        { duration: '1m', target: 0 }, 
+
+      ],
+    };
+
+    export default () => {
+      http.get('https://ryan.suaysuay.shop/');
+      sleep(1);
+    };
+  browser.js: |
+    import { browser } from 'k6/experimental/browser';
+    import { check,sleep } from 'k6';
+
+    export const options = {
+      scenarios: {
+        ui: {
+          executor: 'constant-vus',
+          options: {
+            browser: {
+              type: 'chromium',
+            },
+          },
+          vus: 1,
+          duration: '30s',
+        },
+      },
+      thresholds: {
+        checks: ["rate==1.0"]
+      }
+    }
+
+    export default async function () {
+      const page = browser.newPage();
+
+      try {
+        await page.goto('https://test.k6.io/my_messages.php');
+
+        page.locator('input[name="login"]').type('admin');
+        page.locator('input[name="password"]').type('123');
+
+        const submitButton = page.locator('input[type="submit"]');
+
+        await Promise.all([page.waitForNavigation(), submitButton.click()]);
+
+        check(page, {
+          'header': p => p.locator('h2').textContent() == 'Welcome, admin!',
+        });
+      } finally {
+        page.close();
+      }
+    //   page.goto('https://ryan.suaysuay.shop/');
+    //   sleep(5);
+    //   page.close();
+    }

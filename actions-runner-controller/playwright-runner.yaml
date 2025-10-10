@@ -1,0 +1,45 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: playwright-runner
+  namespace: actions-runner-system
+spec:
+  dockerMTU: 1450
+  organization: "apiplustech"
+  dockerdWithinRunnerContainer: true
+  image: ghcr.io/apiplustech/playwright:v1.32.3-focal
+  labels:
+  - playwright
+  selector:
+    matchLabels:
+      app: playwright-runner
+  serviceName: playwright-runner
+  template:
+    metadata:
+      labels:
+        app: playwright-runner
+        # annotations: 
+        #   sidecar.istio.io/inject: "false"
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-dell-2
+      tolerations:
+      - key: "runner"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: runner
+        resources:
+          limits:
+            cpu: "8"
+            memory: "16Gi"
+          requests:
+            cpu: "100m"
+            memory: "1Gi"
+        env:
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+        securityContext:
+          privileged: true # Enable this if you are not using `dockerdWithinRunnerContainer` OR  you need to run a job that require privilege
+      imagePullSecrets:
+      - name: regcred

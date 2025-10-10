@@ -1,0 +1,53 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler # If you are using HorizontalRunnerAutoscaler, ensure to not specify replicas in runner's config
+metadata:
+  name: runner-deployment-autoscaler
+spec:
+  scaleTargetRef:
+    # scaleTargetRef.Name must match runner's name
+    name: action-runner
+    kind: RunnerSet
+  minReplicas: 8
+  maxReplicas: 8
+  metrics:
+  - type: PercentageRunnersBusy # scale based on busy/running runners at the moment
+    scaleUpThreshold: '0.75'
+    scaleDownThreshold: '0.3'
+    scaleUpFactor: '1.4'
+    scaleDownFactor: '0.7'
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler # If you are using HorizontalRunnerAutoscaler, ensure to not specify replicas in runner's config
+metadata:
+  name: buildx-deployment-autoscaler
+spec:
+  scaleTargetRef:
+    # scaleTargetRef.Name must match runner's name
+    name: buildx-runner
+    kind: RunnerSet
+  minReplicas: 4
+  maxReplicas: 4
+  metrics:
+  - type: PercentageRunnersBusy # scale based on busy/running runners at the moment
+    scaleUpThreshold: '0.75'
+    scaleDownThreshold: '0.3'
+    scaleUpFactor: '1.4'
+    scaleDownFactor: '0.7'
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler # If you are using HorizontalRunnerAutoscaler, ensure to not specify replicas in runner's config
+metadata:
+  name: playwright-deployment-autoscaler
+spec:
+  scaleTargetRef:
+    # scaleTargetRef.Name must match runner's name
+    name: playwright-runner
+    kind: RunnerSet
+  minReplicas: 2
+  maxReplicas: 2
+  metrics:
+  - type: PercentageRunnersBusy # scale based on busy/running runners at the moment
+    scaleUpThreshold: '0.75'
+    scaleDownThreshold: '0.3'
+    scaleUpFactor: '1.4'
+    scaleDownFactor: '0.7'

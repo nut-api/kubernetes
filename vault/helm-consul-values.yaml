@@ -1,0 +1,27 @@
+global:
+  datacenter: vault-kubernetes
+client:
+  enabled: true
+
+server:
+  replicas: 3
+  bootstrapExpect: 3
+  disruptionBudget:
+    maxUnavailable: 0
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "50m"
+    limits:
+      memory: "200Mi"
+      cpu: "500m"
+
+connectInject:
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "50m"
+    limits:
+      memory: "200Mi"
+      cpu: "500m"
+

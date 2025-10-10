@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: discourse
+spec:
+  hosts:
+  - "forum.dicast.io"
+  gateways:
+  - istio-system/gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: discourse.discourse.svc.cluster.local
+        port:
+          number: 80

@@ -1,0 +1,26 @@
+- name: Install NVM
+  become: false
+  community.general.homebrew:
+    name: nvm
+    state: present
+
+- name: Source nvm in profile
+  lineinfile: >
+    dest=/etc/zprofile
+    line="source $(brew --prefix nvm)/nvm.sh"
+    create=yes
+
+# - name: Install node
+#   shell: ". /usr/local/opt/nvm/nvm.sh && nvm install 16"
+#   args:
+#     executable: /bin/bash
+
+# - name: check pnpm
+#   command: which pnpm
+#   register: pnpm_check
+#   failed_when: no
+#   changed_when: no
+
+# - name: Install packages with npm
+#   command: sudo -i npm install -g pnpm
+#   when: pnpm_check.rc != 0

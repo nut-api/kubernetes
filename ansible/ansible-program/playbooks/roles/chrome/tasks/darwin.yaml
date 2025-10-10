@@ -1,0 +1,5 @@
+- name: Install Chrome
+  become: false
+  community.general.homebrew_cask:
+    name: google-chrome
+    state: present

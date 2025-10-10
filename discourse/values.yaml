@@ -1,0 +1,25 @@
+host: "forum.dicast.io"
+image:
+  debug: false
+discourse:
+  plugins:
+  - https://github.com/discourse/discourse-openid-connect
+auth:
+  email: devadmin@apiplus.tech
+  username: admin
+smtp:
+  enabled: true
+  host: smtp.postmarkapp.com
+  port: 587
+  user: 03f5d05f-8f5b-455e-9acc-cc116f7c3fec
+  password: 03f5d05f-8f5b-455e-9acc-cc116f7c3fec
+  protocol: tls
+postgresql:
+  enabled: false
+externalDatabase:
+  host: db-discourse-primary.discourse.svc.cluster.local
+  port: 5432
+  create: true
+  postgresUser: admin
+  existingSecret: db-discourse-pguser-admin
+  existingSecretPostgresPasswordKey: password

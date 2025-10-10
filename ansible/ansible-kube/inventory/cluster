@@ -1,0 +1,28 @@
+[cluster:children]
+k8s_nodes
+
+[k8s_nodes:children]
+k8s_masters
+k8s_workers
+
+[k8s_masters:children]
+k8s_master_primary
+k8s_master_replicas
+
+[k8s_master_primary]
+10.1.20.152 ansible_user=Admin
+[k8s_master_replicas]
+10.1.20.[150:151] ansible_user=Admin
+; 10.1.20.150 ansible_user=Admin
+
+[k8s_workers]
+# 10.1.20.156 ansible_user=Admin
+10.1.20.[153:155] ansible_user=Admin
+; 10.1.20.155 ansible_user=Admin
+; 10.1.20.153 ansible_user=Admin
+
+
+[all:vars]
+ ansible_python_interpreter=/usr/bin/python3
+ kubernetes_version=v1.30.3
+ kubeadm_version=v1.30

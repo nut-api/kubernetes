@@ -1,0 +1,23 @@
+- name: check gh command
+  command: which gh
+  register: gh_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download Github Cli
+    get_url: 
+      url="https://github.com/cli/cli/releases/download/v2.23.0/gh_2.23.0_linux_amd64.deb"
+      dest="/opt/gh_2.23.0_linux_amd64.deb"
+
+  - name: Install Github Cli
+    ansible.builtin.apt:
+      deb: /opt/gh_2.23.0_linux_amd64.deb
+
+
+  - name: Remove file (delete file)
+    ansible.builtin.file:
+      path: /opt/gh_2.23.0_linux_amd64.deb
+      state: absent
+  when: gh_check.rc != 0
+  

@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  context: |
+    argocdUrl : "https://argocd.vongjon.com"
+    appUrl : "https://account.staging-main.site"
+
+  service.webhook.discord: |
+    url: $discordWebhookUrl
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  template.app-sync-running: |
+    webhook:
+      discord:
+        method: POST
+        body: |
+          {
+            "embeds": [
+              {
+                "title": "🔄 Updates in progress",
+                "description": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                "color": 5282293,
+                "fields": [
+                  {
+                    "name": "Operation State",
+                    "value": "{{.app.status.operationState.phase}}"
+                  },
+                  {
+                    "name": "Health Status",
+                    "value": "{{.app.status.health.status}}"
+                  }
+                ],
+                "footer": {
+                  "text": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+                }
+              }
+            ]
+          }
+
+  template.app-sync-succeeded: |
+    webhook:
+      discord:
+        method: POST
+        body: |
+          {
+            "embeds": [
+              {
+                "title": "🚀 Dicast(staging) successfully deployed",
+                "url": "{{.context.appUrl}}",
+                "color": 65280,
+                "fields": [
+                  {
+                    "name": "Sync Status",
+                    "value": "{{.app.status.sync.status}}"
+                  },
+                  {
+                    "name": "Operation State",
+                    "value": "{{.app.status.operationState.phase}}"
+                  },
+                  {
+                    "name": "Health Status",
+                    "value": "{{.app.status.health.status}}"
+                  },
+                  {
+                    "name": "Backend",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/backend.version" }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Frontend",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/frontend.version" }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "HelmChart",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/helm.version" }}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+                }
+              }
+            ]
+          }
+
+  template.app-sync-failed: |
+    webhook:
+      discord:
+        method: POST
+        body: |
+          {
+            "embeds": [
+              {
+                "title": "❌ Dicast(staging) deploy failed",
+                "description": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                "color": 16724502,
+                "fields": [
+                  {
+                    "name": "Sync Status",
+                    "value": "{{.app.status.sync.status}}"
+                  },
+                  {
+                    "name": "Operation State",
+                    "value": "{{.app.status.operationState.phase}}"
+                  },
+                  {
+                    "name": "Health Status",
+                    "value": "{{.app.status.health.status}}"
+                  },
+                  {
+                    "name": "Backend",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/backend.version" }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Frontend",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/frontend.version" }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "HelmChart",
+                    "value": "{{ index .app.metadata.annotations "apiplus.tech/helm.version" }}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+                }
+              }
+            ]
+          }
+
+  trigger.sync-operation-change: |
+    - description: Application syncing has succeeded
+      when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+      send:
+      - app-sync-succeeded
+
+    - description: Application syncing in progress
+      when: app.status.operationState.phase in ['Running'] or app.status.health.status == 'Progressing'
+      oncePer: app.metadata.name + app.metadata.annotations["apiplus.tech/backend.version"] + app.metadata.annotations["apiplus.tech/frontend.version"] + app.metadata.annotations["apiplus.tech/helm.version"]
+      send:
+      - app-sync-running
+
+    - description: Application syncing has failed
+      when: app.status.operationState.phase in ['Error', 'Failed'] or app.status.health.status == "Degraded"
+      oncePer: app.metadata.name + app.metadata.annotations["apiplus.tech/backend.version"] + app.metadata.annotations["apiplus.tech/frontend.version"] + app.metadata.annotations["apiplus.tech/helm.version"]
+      send:
+      - app-sync-failed

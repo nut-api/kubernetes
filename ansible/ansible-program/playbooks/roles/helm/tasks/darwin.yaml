@@ -1,0 +1,5 @@
+- name: Install Helm
+  become: false
+  community.general.homebrew:
+    name: helm
+    state: present

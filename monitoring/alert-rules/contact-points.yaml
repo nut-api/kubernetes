@@ -1,0 +1,18 @@
+apiVersion: 1
+policies:
+- orgId: 1
+  receiver: grafana-default-email
+  group_by: [grafana_folder, alertname]
+  routes:
+  - receiver: "nut's discord"
+    object_matchers:
+    - ['alert', '=', 'node']
+contactPoints:
+- orgId: 1
+  name: "nut's discord"
+  receivers:
+  - uid: grafana
+    type: discord
+    settings:
+      username: grafana_bot
+      url: https://discord.com/api/webhooks/1211961519131332699/9vi24BJQPF8NAc6qZKZbuyMw-xmV8QtP4vw5oHvG9SV9A1p4hhYpzcxS7lgs-XlC38sc

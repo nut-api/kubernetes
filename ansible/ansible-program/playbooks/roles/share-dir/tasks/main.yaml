@@ -1,0 +1,31 @@
+- name: Install NFS packages
+  apt: 
+    name: "{{ item }}"
+    state: present 
+    update_cache: yes
+  vars:
+    item:
+    - nfs-common
+    - autofs
+
+- name: Create a nhome directory
+  ansible.builtin.file:
+    path: /nhome
+    state: directory
+    mode: '0755'
+
+- name: Copy Autofs (master) Config
+  template:
+    src: auto.master.j2
+    dest: /etc/auto.master
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy Autofs (map) Config
+  template:
+    src: auto.nhome.j2
+    dest: /etc/auto.nhome
+    owner: root
+    group: root
+    mode: 0644

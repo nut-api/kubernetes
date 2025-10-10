@@ -1,0 +1,67 @@
+- name: Install packages
+  apt: 
+    name: "{{ item }}"
+    state: present 
+    update_cache: yes
+  vars:
+    item:
+    - git
+    - vim
+    - curl
+    - make
+    - python3-pip
+    - libnss3-tools
+    - fzf
+    - postgresql-client
+    - npm
+    - tmux
+    - xclip
+    - build-essential
+    - ripgrep
+    - jq
+
+- name: Install python gql-cli packages
+  ansible.builtin.pip:
+    name: gql[all]
+
+- name: Install nvm
+  git: repo=https://github.com/creationix/nvm.git dest=/opt/nvm
+  tags: nvm
+
+- name: Source nvm in profile
+  lineinfile: >
+    dest=/etc/profile
+    line="source /opt/nvm/nvm.sh"
+    create=yes
+  tags: nvm
+
+- name: Install nvm
+  ansible.builtin.shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+- name: Change permissions
+  ansible.builtin.file:
+    path: /opt/mkcert
+    mode: '0755'
+
+- name: check node version
+  command: sudo -i node --version
+  register: node_check
+  failed_when: no
+  changed_when: no
+
+- name: Install node 19
+  shell: "sudo -i nvm install 19"
+  when: node_check.stdout.find('v19') == -1
+
+- name: check pnpm
+  command: which pnpm
+  register: pnpm_check
+  failed_when: no
+  changed_when: no
+
+- name: Install packages with npm
+  command: npm install -g pnpm
+  when: pnpm_check.rc != 0

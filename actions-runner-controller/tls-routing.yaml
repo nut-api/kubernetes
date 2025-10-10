@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: tls-routing
+  namespace: actions-runner-system
+spec:
+  hosts:
+  - "*.digisense.io*"
+  - "*.digisense-site.com12806012857"
+  gateways:
+  - mesh
+  tls:
+  - match:
+    - sniHosts:
+      - "*.digisense.io12806012857"
+      - "*.digisense-site.com12806012857"
+    route:
+    - destination:
+        host: istio-ingress.istio-system.svc.cluster.local

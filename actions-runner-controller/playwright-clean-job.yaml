@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-playwright-clean
+  namespace: actions-runner-system
+spec:
+  schedule: "0 0 * * 6" # Every Saturday at 00:00 UTC
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers:
+          - name: snapshotupload
+            image: backblazeit/b2:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            args:
+            - -ec
+            - |
+              echo "Cleaning up Playwright reports from Backblaze B2";
+              b2v4 rm --versions --recursive b2://playwright-reports-apiplus;
+              if [ $? -ne 0 ]; then
+                echo "Failed to clean up Playwright reports from Backblaze B2";
+                exit 1;
+              else
+                echo "Playwright reports cleaned up successfully";
+              fi
+            env:
+            - name: B2_APPLICATION_KEY
+              value: "K004Nl44Om+TlfGsEOzUSILrCxosn6Y"
+            - name: B2_APPLICATION_KEY_ID
+              value: "004d9a838e5854c0000000015"
+          restartPolicy: Never

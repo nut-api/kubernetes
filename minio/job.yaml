@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-init
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      containers:
+      - image: minio/mc:latest
+        name: minio-init
+        command:
+        - /bin/bash
+        - -c
+        - |
+          until mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; do sleep 2; done;
+          mc mb myminio/apiplus-public;
+          mc mb myminio/apiplus-private;
+          mc mb myminio/actions-cache;
+          mc anonymous set download myminio/apiplus-public;
+        env:
+        - name: MINIO_ROOT_USER
+          value: admin
+        - name: MINIO_ROOT_PASSWORD
+          value: admin1234
+      restartPolicy: Never

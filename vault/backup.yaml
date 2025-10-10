@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-snapshot-job
+  namespace: vault
+spec:
+  template:
+    spec:
+      volumes:
+      - name: share
+        emptyDir: {}
+      containers:
+      - name: backup
+        image: hashicorp/consul
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CONSUL_HTTP_ADDR
+          value: consul-consul-server:8500
+        command: [ "/bin/sh", "-c" ]
+        args:
+        - >
+          consul snapshot save /share/vault-backup.snap
+        volumeMounts:
+        - name: share
+          mountPath: "/share"
+      - name: snapshotupload
+        image: backblazeit/b2:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        args:
+        - -ec
+        - |
+          until [ -f /share/vault-backup.snap ]; do sleep 5; done;
+          b2v4 file upload apiplus-vault /share/vault-backup.snap vault-production/vault_backup_$(date +"%Y%m%d_%H%M%S").snap;
+        env:
+        - name: B2_APPLICATION_KEY
+          value: "K004NpUO+z+fjq2onARz981ItqirbzA"
+        - name: B2_APPLICATION_KEY_ID
+          value: "004d9a838e5854c000000000b"
+        volumeMounts:
+        - mountPath: /share
+          name: share
+      restartPolicy: Never

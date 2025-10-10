@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/apiplustech/production-deployment.git
+    targetRevision: main
+    path: charts/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - ApplyOutOfSyncOnly=true

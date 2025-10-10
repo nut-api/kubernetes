@@ -1,0 +1,7 @@
+# - import_playbook: docker.yaml
+# - import_playbook: kubeadm-prep.yaml
+- hosts: k8s_master_primary
+  become: yes
+  roles:
+  - kubeadm-get-master
+- import_playbook: kubeadm-join-master.yaml

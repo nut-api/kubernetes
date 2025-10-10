@@ -1,0 +1,34 @@
+- name: check helm command
+  command: which helm
+  register: helm_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download Helm
+    get_url:
+      url="https://get.helm.sh/helm-v3.11.1-linux-amd64.tar.gz"
+      dest="/opt/helm-v3.11.1-linux-amd64.tar.gz"
+
+  - name: Create a directory if it does not exist
+    ansible.builtin.file:
+      path: /opt/helm
+      state: directory
+
+  - name: Extract the downloaded file
+    command: tar -xvzf /opt/helm-v3.11.1-linux-amd64.tar.gz -C /opt/helm
+
+  - name: Remove helm's packaged
+    ansible.builtin.file:
+      path: /opt/helm-v3.11.1-linux-amd64.tar.gz
+      state: absent
+
+  - name: Create a symbolic link
+    ansible.builtin.file:
+      src: /opt/helm/linux-amd64/helm
+      dest: /usr/local/bin/helm
+      owner: root
+      group: root
+      state: link
+  when: helm_check.rc != 0
+  

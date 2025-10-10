@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-restore-job
+  namespace: vault
+spec:
+  template:
+    spec:
+      volumes:
+      - name: share
+        emptyDir: {}
+      containers:
+      - name: snapshotdownload
+        image: backblazeit/b2:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        args:
+        - -ec
+        - |
+          b2v4 file download b2://apiplus-vault/vault-staging/$VAULT_SNAPSHOT /share/vault-backup.snap;
+        env:
+        - name: B2_APPLICATION_KEY
+          value: "K004NpUO+z+fjq2onARz981ItqirbzA"
+        - name: B2_APPLICATION_KEY_ID
+          value: "004d9a838e5854c000000000b"
+        - name: VAULT_SNAPSHOT
+          value: "vault_backup_20241127_083917.snap"
+        volumeMounts:
+        - mountPath: /share
+          name: share
+      - name: restore
+        image: hashicorp/consul
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CONSUL_HTTP_ADDR
+          value: consul-consul-server:8500
+        - name: VAULT_ADDR
+          value: vault-active:8200
+        command:
+        - /bin/sh
+        args:
+        - -ec
+        - |
+          until [ -f /share/vault-backup.snap ]; do sleep 5; done;
+          consul snapshot restore /share/vault-backup.snap
+        volumeMounts:
+        - name: share
+          mountPath: "/share"
+      restartPolicy: Never

@@ -1,0 +1,5 @@
+- name: Install yq
+  become: false
+  community.general.homebrew:
+    name: yq
+    state: present

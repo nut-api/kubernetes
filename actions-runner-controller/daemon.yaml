@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  daemon.json: |
+    {
+      "insecure-registries": [ "private-registry-docker-registry.docker-registry.svc.cluster.local:5000" ],
+      "debug": true
+    }
+kind: ConfigMap
+metadata:
+  name: daemon-cm
+  namespace: actions-runner-system

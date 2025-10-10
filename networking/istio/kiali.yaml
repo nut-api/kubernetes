@@ -1,0 +1,13 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  auth:
+    strategy: "token"
+  deployment:
+    accessible_namespaces: ["default"]
+    view_only_mode: false
+  server:
+    web_root: "/kiali"

@@ -6,24 +6,26 @@ metadata:
   name: sourcegraph
 spec:
   replicas: 1
-  selector: 
-    matchLabels: 
+  selector:
+    matchLabels:
       app: sourcegraph
   template:
     metadata:
       labels:
         app: sourcegraph
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-2-new
       containers:
       - image: sourcegraph/server:3.38.0
         name: sourcegraph
         resources:
           requests:
             cpu: "1"
-            memory: "4Gi"
+            memory: "2Gi"
           limits:
             cpu: "6"
-            memory: "16Gi"
+            memory: "8Gi"
         ports:
         - name: frontend
           containerPort: 7080

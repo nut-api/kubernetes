@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: script
+  labels:
+    app: script
+spec:
+  selector:
+    matchLabels:
+      app: script
+  template:
+    metadata:
+      labels:
+        app: script
+    spec:
+      containers:
+      - name: runscript
+        image: curlimages/curl
+        command:
+        - /bin/sh
+        - -c
+        - |
+          /tmp/script.sh
+        volumeMounts:
+        - mountPath: "/tmp/"
+          name: script
+      volumes:
+      - name: "script"
+        configMap:
+          name: script
+          defaultMode: 0755

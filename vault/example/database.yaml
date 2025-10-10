@@ -1,0 +1,35 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: oauth
+spec:
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:centos8-13.5-0
+  postgresVersion: 13
+  instances:
+    - dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+  users:
+    - name: admin
+      databases:
+       - oauth
+      options: "SUPERUSER"
+  backups:
+    pgbackrest:
+      metadata:
+        annotations:
+          traffic.sidecar.istio.io/includeOutboundIPRanges: "*"
+          traffic.sidecar.istio.io/excludeOutboundIPRanges: 10.96.0.1/32 #kubernetes service ip
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:centos8-2.36-0
+      repos:
+      - name: repo1
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 1Gi

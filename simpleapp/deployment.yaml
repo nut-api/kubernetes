@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  labels:
+    app: demo
+spec:
+  selector:
+    matchLabels:
+      app: demo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-3
+      containers:
+      - image: harbor.registry.local/github/apiplustech/storeadmin:v8.1.0
+        name: demo
+        # command:
+        #  - /demo
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+      imagePullSecrets:
+      - name: harbor-local

@@ -1,0 +1,26 @@
+- name: check yq command
+  command: which yq
+  register: yq_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download yq
+    get_url:
+      url="https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64"
+      dest="/opt/yq"
+
+  - name: Change permissions
+    ansible.builtin.file:
+      path: /opt/yq
+      mode: '0755'
+
+  - name: Create a symbolic link
+    ansible.builtin.file:
+      src: /opt/yq
+      dest: /usr/local/bin/yq
+      owner: root
+      group: root
+      state: link
+  when: yq_check.rc != 0
+  

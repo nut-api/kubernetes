@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: smtp4dev
+spec:
+  hosts:
+  - "mail.digisense.dev"
+  gateways:
+  - istio-system/gateway
+  - mesh
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: smtp4dev.smtp.svc.cluster.local
+        port:
+          number: 3000
+  tcp:
+  - match:
+    - port: 25
+    route:
+    - destination:
+        host: smtp4dev.smtp.svc.cluster.local
+        port:
+          number: 25

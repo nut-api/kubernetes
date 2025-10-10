@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: test-se
+spec:
+  hosts:
+  - nginx.example.test
+  resolution: STATIC
+  # ports:
+  # - name: https
+  #   number: 443
+  #   protocol: HTTPS
+  # endpoints:
+  # - address: 10.96.139.116

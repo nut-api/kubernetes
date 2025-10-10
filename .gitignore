@@ -1,2 +1,12 @@
 bookstack-docs/backup/backblazeSecretsLocal.yaml
 bookstack-docs/deployment/config/databaseConfigmapLocal.yaml
+chartmuseum/secretLocal.yaml
+cert-manager/origin-ca-issuer/deploy/example/secret.issuer.local.yaml
+docker-registry/htpasswd
+postgres-operator-examples/s3-secret.yaml
+vault/key-cluster-1.txt
+ansible/ansible-program/hosts
+argocd/**/*-secret.yaml
+.DS_Store
+**/bin/**
+**/production/**

@@ -1,0 +1,50 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dicast-io-prod
+spec:
+  secretName: dicast-io-prod
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+  commonName: '*.dicast.io'
+  dnsNames:
+  - "*.dicast.io"
+  - "*.dicast.site"
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-dns
+  namespace: cert-manager
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: 'nut@apiplustech.com'
+    privateKeySecretRef:
+      name: letsencrypt-prod-dns
+    solvers:
+    - dns01:
+        cloudflare:
+          email: nut@apiplustech.com
+          apiKeySecretRef:
+            name: dicast-cloudflare-api-key-secret
+            key: api-key
+      selector:
+        dnsZones:
+        - 'dicast.io'
+        - '*.dicast.io'
+        - 'dicast.site'
+        - '*.dicast.site'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dicast-cloudflare-api-key-secret
+  namespace: cert-manager
+type: Opaque
+stringData:
+  api-key: ELhI-apEBFwjaSR9q-6h1Z136pvwhfkTf9fNG1l4
+---
+
+

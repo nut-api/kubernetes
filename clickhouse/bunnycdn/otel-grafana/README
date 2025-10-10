@@ -1,0 +1,34 @@
+```sql
+SELECT
+    LogAttributes['url'] AS url,
+    sum(toUInt64(LogAttributes['bytes_sent'])) AS total_bytes
+FROM otel_logs
+WHERE LogAttributes['bytes_sent'] != ''
+GROUP BY url
+ORDER BY total_bytes DESC
+LIMIT 10
+```
+
+Extract otel_logs to bunny format.
+```sql
+SELECT
+        Body, 
+        Timestamp::DateTime AS Timestamp,
+        ServiceName,
+        LogAttributes['cache_status'] AS CacheStatus,
+        LogAttributes['status_code'] AS StatusCode,
+        LogAttributes['bytes_sent'] AS ByteSent,
+        LogAttributes['pull_zone_id'] AS PullZoneId,
+        LogAttributes['remote_ip'] AS RemoteIp,
+        LogAttributes['referer_url'] AS RefererUrl,
+        LogAttributes['url'] AS Url,
+        LogAttributes['edge_location'] AS EdgeLocation,
+        LogAttributes['user_agent'] AS UserAgent,
+        LogAttributes['unique_request_id'] AS UniqueRequestId,
+        LogAttributes['country_code'] AS CountryCode,
+        SeverityText,
+        SeverityNumber
+FROM otel_logs
+LIMIT 1
+FORMAT Vertical
+```

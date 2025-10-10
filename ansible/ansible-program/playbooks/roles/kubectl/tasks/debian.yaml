@@ -1,0 +1,42 @@
+- name: check kubectl command
+  command: which kubectl
+  register: kubectl_check
+  failed_when: no
+  changed_when: no
+
+- block:
+  - name: Download kubectl
+    get_url:
+      url="https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl"
+      dest="/opt/kubectl"
+
+  - name: Change permissions
+    ansible.builtin.file:
+      path: /opt/kubectl
+      mode: '0755'
+
+  - name: Create a symbolic link
+    ansible.builtin.file:
+      src: /opt/kubectl
+      dest: /usr/local/bin/kubectl
+      owner: root
+      group: root
+      state: link
+
+  when: kubectl_check.rc != 0
+
+- name: kubectl completion bash
+  ansible.builtin.shell:
+    cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
+    creates: /etc/bash_completion.d/kubectl
+- name: autocompletion
+  lineinfile: >
+    dest=/etc/bash.bashrc
+    line="alias k=kubectl"
+    create=yes
+- name: autocompletion
+  lineinfile: >
+    dest=/etc/bash.bashrc
+    line="complete -o default -F __start_kubectl k"
+    create=yes
+  

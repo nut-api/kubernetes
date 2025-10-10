@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: docker-hub-proxy
+  namespace: docker-registry
+spec:
+  hosts:
+  - docker-hub.vongjon.com
+  gateways:
+  - istio-system/gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: docker-hub-proxy-docker-registry.docker-registry.svc.cluster.local
+        port:
+          number: 5000

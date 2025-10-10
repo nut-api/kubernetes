@@ -1,0 +1,28 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: dependent-issue
+spec:
+  ephemeral: true
+  dockerMTU: 1450
+  organization: "apiplustech"
+  dockerdWithinRunnerContainer: true
+  image: ghcr.io/apiplustech/actions-runner-dind:latest
+  labels:
+  - dependent-issue
+  selector:
+    matchLabels:
+      app: dependent-issue
+  serviceName: dependent-issue
+  template:
+    metadata:
+      labels:
+        app: dependent-issue
+    spec:
+      containers:
+      - name: runner
+        env:
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+      imagePullSecrets:
+      - name: regcred

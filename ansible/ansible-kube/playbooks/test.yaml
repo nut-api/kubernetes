@@ -1,0 +1,17 @@
+- hosts: k8s_master_primary
+  become: true
+  serial: 1
+  roles:
+    - test
+
+- hosts: k8s_master_replicas
+  become: true
+  serial: 1
+  roles:
+    - test
+
+- hosts: k8s_workers
+  become: true
+  serial: 1
+  roles:
+    - test

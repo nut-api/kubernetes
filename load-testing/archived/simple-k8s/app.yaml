@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6loadtest
+spec:
+  template:
+    spec:
+      containers:
+      - image: loadimpact/k6:latest
+        name: k6loadtest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          k6 run /opt/browser.js
+        env:
+        - name: K6_OUT
+          value: "influxdb=http://influxdb:8086/k6"
+        ports:
+        - name: tcp
+          containerPort: 6565
+        volumeMounts:
+        - name: my-script-volume
+          mountPath: /opt
+      restartPolicy: Never
+      volumes:
+      - name: my-script-volume
+        configMap:
+          name: load-script
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: influxdb
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - image: influxdb:1.8
+        name: influxdb
+        env:
+        - name: INFLUXDB_DB
+          value: k6
+        ports:
+        - name: tcp
+          containerPort: 8086
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: influxdb
+spec:
+  selector:
+    app: influxdb
+  type: ClusterIP
+  ports:
+  - name: tcp
+    port: 8086
+    targetPort: 8086

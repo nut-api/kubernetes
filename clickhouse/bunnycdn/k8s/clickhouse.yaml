@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickhouse
+  labels:
+    app: clickhouse
+spec:
+  selector:
+    matchLabels:
+      app: clickhouse
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server
+        env:
+        - name: CLICKHOUSE_USER
+          value: "user"
+        - name: CLICKHOUSE_PASSWORD
+          value: "pass"
+        ports:
+        - containerPort: 9000
+          name: tcp-server
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+spec:
+  selector:
+    app: clickhouse
+  type: ClusterIP
+  ports:
+  - name: clickhouse
+    protocol: TCP
+    port: 9000
+    targetPort: 9000

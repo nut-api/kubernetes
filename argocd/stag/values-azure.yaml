@@ -1,0 +1,55 @@
+redis-ha:
+  enabled: true
+
+controller:
+  replicas: 1
+
+server:
+  replicas: 1
+  extensions:
+    # -- Enable support for Argo CD extensions
+    enabled: true
+    extensionList:
+    - name: extension-rollouts
+      env:
+      - name: EXTENSION_URL
+        value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
+
+configs:
+  params:
+    server.insecure: true
+  secret:
+    githubSecret: $github-secret:GITHUB_WEBHOOK_SECRET
+  cm:
+    url: "https://argocd.vongjon.com"
+    dex.config: |
+      connectors:
+      - type: microsoft
+        id: microsoft
+        name: Azure
+        config:
+          clientID: $azure-secret:MICROSOFT_APPLICATION_ID
+          clientSecret: $azure-secret:MICROSOFT_CLIENT_SECRET
+          redirectURI: http://localhost:8080/api/dex/callback
+          tenant: b113961f-7d2b-4e69-b9a7-e4473fc1d8a4
+          groups:
+            - Staging Admins
+            - API+ Dev
+  rbac:
+    policy.default: role:readonly
+    scopes: '[groups, email]'
+    policy.csv: |
+      g, Staging Admins, role:admin
+      g, API+ Dev, role:readonly
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicaCount: 1
+
+notifications:
+  enabled: true
+  secret:
+    create: false
+  cm:
+    create: false

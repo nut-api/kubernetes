@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: couchdb
+spec:
+  selector:
+    matchLabels:
+      app: couchdb
+  serviceName: couchdb-cluster
+  replicas: 3
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: couchdb
+    spec:
+      initContainers:
+        - name: couch-init
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              cp /tmp/config.ini /default.d;
+          volumeMounts:
+            - name: couch-db-config
+              mountPath: /default.d
+            - name: config
+              mountPath: /tmp/
+      containers:
+        - name: db-couch
+          image: couchdb:3.3.2
+          ports:
+            - containerPort: 5984
+          env:
+            - name: COUCHDB_USER
+              value: "admin"
+            - name: COUCHDB_PASSWORD
+              value: "admin"
+            - name: COUCHDB_SECRET
+              value: "1SDsej6A12LxzW7Hin79"
+            - name: COUCHDB_ERLANG_COOKIE
+              value: "8JedMi2FQlmJpSkDsBSP"
+            - name: ERL_FLAGS
+              value: "-name couchdb"
+          # command: 
+          # - /bin/bash
+          # - -c
+          # - |
+          #   tini -- /docker-entrypoint.sh /opt/couchdb/bin/couchdb
+          readinessProbe:
+            httpGet:
+              path: /_up
+              port: 5984
+            periodSeconds: 5
+          volumeMounts:
+            - name: couch-db-config
+              mountPath: /opt/couchdb/etc/default.d
+      volumes:
+      - name: couch-db-config
+        emptyDir: {}
+      - name: config
+        configMap:
+          name: couch-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: couchdb-cluster
+  labels:
+    app: couchdb
+spec:
+  clusterIP: None
+  ports:
+  - port: 5984
+    name: tcp-couchdb
+  publishNotReadyAddresses: true
+  selector:
+    app: couchdb

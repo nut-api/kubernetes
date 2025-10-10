@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: challange
+  namespace: istio-system
+spec:
+  hosts:
+    - "naaraanhq.com"
+  gateways:
+    - istio-system/gateway
+  http:
+    - match:
+        - uri:
+            prefix: /.well-known/acme-challenge/1vwFhqMUpoSDcqdk_kAhwyBko5gRBHWwZHyPdo1gVSw
+      route:
+        - destination:
+            host: cm-acme-http-solver-fc66s.istio-system.svc.cluster.local
+            port:
+              number: 8089

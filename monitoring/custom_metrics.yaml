@@ -1,0 +1,23 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: namespace-metrics
+spec:
+  metrics:
+  - providers:
+    - name: prometheus
+    overrides:
+    - match:
+        metric: REQUEST_COUNT
+      tagOverrides:
+        request_path:
+          value: "request.path"
+        request_host:
+          value: "request.host"
+    - match:
+        metric: RESPONSE_SIZE
+      tagOverrides:
+        request_path:
+          value: "request.path"
+        request_host:
+          value: "request.host"

@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "backup-couchdb"
+spec:
+  template:
+    metadata:
+      name: "backup-couchdb"
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-inject-status: 'update'
+        vault.hashicorp.com/role: "production"
+        vault.hashicorp.com/agent-inject-secret-config: 'secret/data/production'
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{ with secret "secret/data/production" -}}
+          export COUCHDB_PASSWORD={{ .Data.data.couchCorePassword }}
+          {{- end }}
+        traffic.sidecar.istio.io/excludeOutboundPorts: "8200"
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: backup
+        image: ghcr.io/apiplustech/couchdb-cluster-setup:test
+        imagePullPolicy: "Always"
+        command:
+        - 'bash'
+        - '-c'
+        - |
+          source /vault/secrets/config
+          ./dump.sh -$OPERATION
+          sleep 3
+          x=$(echo $?); curl -fsI -X POST http://localhost:15020/quitquitquit && exit $x
+        env:
+        - name: OPERATION # "d":dump, "r":restore
+          value: "d"
+        - name: COUCHDB_USER
+          value: admin
+        # - name: COUCHDB_PASSWORD
+        #   value: "CbFwVF389Y7X6Di4h32h"
+        - name: COUCHDB_URL # Dump from or Restore to endpoint.
+          value: "db-couch.main.svc.cluster.local:5984"
+        - name: AWS_ACCESS_KEY_ID
+          value: "004d9a838e5854c000000000a"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "K004EKOe3YYqnYHH4OOYOFHf5LNn4ns"
+        - name: AWS_ENDPOINT_URL
+          value: "https://s3.us-west-004.backblazeb2.com"
+        - name: S3_BUCKET
+          value: "test-couchdb"
+      serviceAccountName: production
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600

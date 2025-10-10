@@ -1,0 +1,68 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: action-runner
+spec:
+  dockerMTU: 1450
+  organization: "apiplustech"
+  dockerdWithinRunnerContainer: true
+  image: ghcr.io/apiplustech/actions-runner-dind:latest
+  labels:
+  - k8s
+  selector:
+    matchLabels:
+      app: action-runner
+  serviceName: action-runner
+  template:
+    metadata:
+      labels:
+        app: action-runner
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-dell-2
+      tolerations:
+      - key: "runner"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: runner
+        resources:
+          limits:
+            cpu: "3"
+            memory: "4Gi"
+          requests:
+            cpu: "100m"
+            memory: "1Gi"
+        env:
+        - name: GOMODCACHE
+          value: "/home/runner/.cache/go-mod"
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+        volumeMounts:
+        - name: cache
+          mountPath: "/home/runner/.cache"
+#        - name: var-lib-docker
+#          mountPath: /var/lib/docker
+        securityContext:
+          privileged: true # Enable this if you are not using `dockerdWithinRunnerContainer` OR  you need to run a job that require privilege
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: cache
+    spec:
+      storageClassName: arc-go-cache
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+#  - metadata:
+#      name: var-lib-docker
+#    spec:
+#      accessModes:
+#      - ReadWriteOnce
+#      resources:
+#        requests:
+#          storage: 10Mi
+#      storageClassName: docker-cache

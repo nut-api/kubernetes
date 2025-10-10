@@ -1,0 +1,26 @@
+- name: check kubectx command
+  command: which kubectx
+  register: kubectx_check
+  failed_when: no
+  changed_when: no
+- name: Install kubens
+  block:
+  - name: Clone the project
+    git: repo=https://github.com/ahmetb/kubectx dest=/opt/kubectx
+
+  - name: Create a kubectx symbolic link
+    ansible.builtin.file:
+      src: /opt/kubectx/kubectx
+      dest: /usr/local/bin/kubectx
+      owner: root
+      group: root
+      state: link
+
+  - name: Create a kubens symbolic link
+    ansible.builtin.file:
+      src: /opt/kubectx/kubens
+      dest: /usr/local/bin/kubens
+      owner: root
+      group: root
+      state: link
+  when: kubectx_check.rc != 0

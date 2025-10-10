@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+  - hosts:
+    - '*.dicast.io'
+    port:
+      name: dicast-io-https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: dicast-io-tls
+      mode: SIMPLE
+  - hosts:
+    - '*.dicast.site'
+    port:
+      name: dicast-site-https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: dicast-site-tls
+      mode: SIMPLE

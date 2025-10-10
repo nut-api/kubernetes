@@ -1,0 +1,1 @@
+curl -XPOST localhost:15000/logging?level=debug

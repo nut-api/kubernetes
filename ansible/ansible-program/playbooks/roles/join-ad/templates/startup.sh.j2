@@ -1,0 +1,37 @@
+#!/bin/bash
+# This script use for setup new machine to login in github and add docker group permission to user.
+
+printf "Add user $USER to Docker group.\n"
+if id -nG "$USER" | grep -qw docker; then
+    echo $USER already belongs to docker
+else
+    echo $USER does not belong to docker
+    echo Sudo permission is needed to add the group.
+    sudo usermod -aG docker $USER
+fi
+
+printf "\nGenarating a new SSH key\n"
+SSH_KEY=~/.ssh/id_ed25519
+if [ ! -f "$SSH_KEY" ]; then
+    read -p 'E-mail: ' EMAIL
+    ssh-keygen -t ed25519 -C $EMAIL -N "" -f ~/.ssh/id_ed25519 -q
+fi
+ssh-add ~/.ssh/id_ed25519
+
+printf "\nAdding a new public SSH key to your account with Github Cli.\n"
+gh auth login
+
+printf "\nLogin Github's registry for Docker\n"
+printf "To authenticate container registry, you a new personal access token (classic) with read:packages\n"
+printf "You can create on Github->Settings->Developer settings->Personal access tokens, click Tokens (classic)\n"
+read -p "If you already copy the token, press enter to continue"
+read -sp 'Personal Access Token(Hidden): ' CR_PAT
+
+newgrp docker << END
+echo $CR_PAT | docker login ghcr.io -u $USERNAME --password-stdin
+END
+
+git config --global url.git@github.com:.insteadOf https://github.com/
+go env -w GOPRIVATE=github.com/apiplustech
+
+printf "\nLog out and log back in so that your group(Docker) membership is re-evaluated.\n"

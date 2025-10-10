@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: backend-service
+spec:
+  hosts:
+  - foundation.naaraanhq.dev
+  - kratos.naaraanhq.dev
+  - hydra.naaraanhq.dev
+  - authen.naaraanhq.dev
+  - s3.naaraanhq.dev
+  resolution: STATIC
+  # ports:
+  # - name: https
+  #   number: 443
+  #   protocol: HTTPS
+  # endpoints:
+  # - address: 10.96.139.116

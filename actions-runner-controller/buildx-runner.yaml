@@ -1,0 +1,45 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: buildx-runner
+  namespace: actions-runner-system
+spec:
+  dockerMTU: 1450
+  organization: "apiplustech"
+  dockerdWithinRunnerContainer: true
+  image: ghcr.io/apiplustech/actions-runner-dind:latest
+  labels:
+  - buildx
+  selector:
+    matchLabels:
+      app: buildx-runner
+  serviceName: buildx-runner
+  template:
+    metadata:
+      labels:
+        app: buildx-runner
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-dell-2
+      tolerations:
+      - key: "runner"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: runner
+        resources:
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+          requests:
+            cpu: "100m"
+            memory: "1Gi"
+        env:
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+        securityContext:
+          privileged: true # Enable this if you are not using `dockerdWithinRunnerContainer` OR  you need to run a job that require privilege
+      imagePullSecrets:
+      - name: regcred

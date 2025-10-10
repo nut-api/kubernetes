@@ -1,0 +1,65 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dex
+  namespace: dex
+data:
+  config.yaml: |
+    # Active Directory and kubelogin Integration sample
+    issuer: https://dex.vongjon.com/dex
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:5556
+      # tlsCert: /etc/dex/tls/openid-ca.pem
+      # tlsKey: /etc/dex/tls/openid-key.pem
+    
+    connectors:
+    - type: ldap
+      name: ActiveDirectory
+      id: ldap
+      config:
+        host: 10.1.20.5
+    
+        # No TLS for this setup.
+        insecureNoSSL: true
+        insecureSkipVerify: true
+    
+        # This would normally be a read-only user.
+        bindDN: "cn=sync sync,ou=User,ou=Devops,dc=ad,dc=apiplustech,dc=com"
+        bindPW: "12345678"
+    
+        usernamePrompt: Email Address
+    
+        userSearch:
+          baseDN: dc=ad,dc=apiplustech,dc=com
+          filter: "(objectClass=person)"
+          username: mail
+          # "DN" (case sensitive) is a special attribute name. It indicates that
+          # this value should be taken from the entity's DN not an attribute on
+          # the entity.
+          idAttr: DN
+          emailAttr: mail
+          nameAttr: cn
+    
+        groupSearch:
+          baseDN: dc=ad,dc=apiplustech,dc=com
+          filter: "(objectClass=group)"
+    
+          userMatchers:
+          # A user is a member of a group when their DN matches
+          # the value of a "member" attribute on the group entity.
+          - userAttr: DN
+            groupAttr: member
+    
+          # The group name should be the "cn" value.
+          nameAttr: cn
+    
+    staticClients:
+    - id: kubernetes
+      redirectURIs:
+      - 'http://localhost:8000'
+      name: 'Kubernetes'
+      secret: QjsEyjl+/gisYYjmBZj/952Axt3ByMB73j9PqTtyqMc=

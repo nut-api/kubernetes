@@ -1,0 +1,13 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumNodeConfig
+metadata:
+  name: cilium-switch-from-iptables-ebpf
+spec:
+  nodeSelector:
+    matchLabels:
+      io.cilium.enable-ebpf: "true"
+  defaults:
+    enable-bpf-masquerade: "true"
+    # routing-mode: "native"
+    # auto-direct-node-routes: "true"
+    # ipv4-native-routing-cidr: "172.20.0.0/16"

@@ -1,0 +1,4 @@
+crd:
+  create: false
+meshProvider: istio
+metricsServer: "http://prometheus-prometheus.monitoring:9090"

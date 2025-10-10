@@ -1,0 +1,3 @@
+# - import_playbook: docker.yaml
+# - import_playbook: kubeadm-prep.yaml
+- import_playbook: kubeadm-join-worker.yaml

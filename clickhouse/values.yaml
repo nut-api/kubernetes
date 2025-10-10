@@ -1,0 +1,36 @@
+shards: 1
+replicaCount: 1 
+resources:
+  requests:
+    cpu: 3
+    memory: 1Gi
+  limits:
+    cpu: 6
+    memory: 10Gi
+keeper:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+existingConfigdConfigmap: clickhouse-config
+podAnnotations:
+  vault.hashicorp.com/agent-inject: 'true'
+  vault.hashicorp.com/agent-inject-status: 'update'
+  vault.hashicorp.com/role: "monitoring" #k8s role
+  vault.hashicorp.com/agent-inject-secret-config: 'secret/data/monitoring' # Secret location
+  vault.hashicorp.com/agent-inject-template-config: |
+    {{`{{- with secret "secret/data/monitoring" -}}
+      export AWS_ACCESS_KEY_ID={{ .Data.data.CLICKHOUSE_AWS_ACCESS_KEY_ID }}
+      export AWS_SECRET_ACCESS_KEY={{ .Data.data.CLICKHOUSE_AWS_SECRET_ACCESS_KEY }}
+    {{- end }}`}}
+  traffic.sidecar.istio.io/excludeOutboundPorts: "8200"
+  vault.hashicorp.com/agent-init-first: "true"
+automountServiceAccountToken: true
+command:
+- "bash"
+- "-c"
+- "source /vault/secrets/config && /opt/bitnami/scripts/clickhouse/entrypoint.sh /opt/bitnami/scripts/clickhouse/run.sh -- --listen_host=0.0.0.0"

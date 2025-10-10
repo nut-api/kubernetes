@@ -1,0 +1,60 @@
+receivers:
+  filelog:
+    start_at: beginning
+    include:
+    - /tmp/sample.log
+    # include_file_name: true
+    # include_file_path: false
+    poll_interval: 1s
+    operators:
+    # Copy the raw message into event.original (this is done OOTB by Logstash in ECS mode)
+    - type: copy
+      from: body
+      to: attributes['event.original']
+    # - type: add #[2]
+    #   field: attributes["data_stream.type"]
+    #   value: "logs"
+    # - type: add #[2]
+    #   field: attributes["data_stream.dataset"]
+    #   value: "access_log_otel"
+    # - type: add #[2]
+    #   field: attributes["data_stream.namespace"]
+    #   value: "default"
+    - type: regex_parser
+      regex: '^(?<cache_status>[^|]*)\|(?<status_code>[^|]*)\|(?<timestamp>[^|]*)\|(?<bytes_sent>[^|]*)\|(?<pull_zone_id>[^|]*)\|(?<remote_ip>[^|]*)\|(?<referer_url>[^|]*)\|(?<url>[^|]*)\|(?<edge_location>[^|]*)\|(?<user_agent>[^|]*)\|(?<unique_request_id>[^|]*)\|(?<country_code>[^|]*)$'
+      timestamp:
+        parse_from: attributes.timestamp
+        layout_type: epoch
+        layout: ms
+
+processors:
+  batch:
+    # send_batch_size: 1000
+    # timeout: 10s
+    # send_batch_max_size: 1000
+
+    # resource: # Add on attributes.
+    #   attributes:
+    #   - key: service.namespace
+    #     value: "abhi-syslog"
+    #     action: upsert
+    #   - key: service.name
+    #     value: "abhi-syslog"
+    #     action: upsert
+
+exporters:
+  debug:
+    verbosity: detailed
+  clickhouse:
+    endpoint: tcp://clickhouse:9000?dial_timeout=10s&username=user&password=pass
+    database: default
+    create_schema: false
+    logs_table_name: otel_logs
+    timeout: 5s
+
+service:
+  pipelines:
+    logs:
+      receivers: [ filelog ]
+      processors: [ batch ]
+      exporters: [ debug, clickhouse ]

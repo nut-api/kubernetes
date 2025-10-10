@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-discourse-pguser-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    postgres-operator.crunchydata.com/cluster: db-discourse
+    postgres-operator.crunchydata.com/pguser: monitor
+stringData:
+  password: root1234
+---
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: db-discourse
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    postgres-operator.crunchydata.com/autoCreateUserSchema: "true"
+spec:
+  # image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-0
+  postgresVersion: 16
+  instances:
+  - name: instance1
+    replicas: 1
+    dataVolumeClaimSpec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 1Gi
+      # selector:
+      #   matchLabels:
+      #     pgo-postgres-cluster: postgres-operator-discourse
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              postgres-operator.crunchydata.com/cluster: db-discourse
+              postgres-operator.crunchydata.com/instance-set: instance1
+  users:
+  - name: "admin"
+    options: 'SUPERUSER'
+    # databases:
+    # - discourse
+    # - name: monitor
+  patroni:
+    dynamicConfiguration:
+      synchronous_mode: true
+      postgresql:
+        parameters:
+          synchronous_commit: "on"
+  backups:
+    pgbackrest:
+      # image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.52.1-1
+      metadata:
+        annotations:
+          traffic.sidecar.istio.io/includeOutboundIPRanges: "*"
+          traffic.sidecar.istio.io/excludeOutboundIPRanges: 10.96.0.1/32 #kubernetes service ip
+          sidecar.istio.io/inject: "false"
+      repos:
+      - name: repo1
+        schedules:
+          full: "0 0 * * 6"
+          incremental: "0 1 * * *"
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 1Gi
+      manual:
+        repoName: repo1
+        options:
+        - --type=full
+  # proxy:
+  #   pgBouncer:
+  #     # image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-1.22-4
+  #     replicas: 1
+  #     metadata:
+  #       labels:
+  #         postgres-operator.crunchydata.com/crunchy-postgres-exporter: "true"
+  #     config:
+  #       # ref for tls/ssl mode "verify-ca": https://github.com/CrunchyData/postgres-operator/issues/3043
+  #       # crunchy cert not issued for replicas host, decrease mode for skip dns checking(just check server cert)
+  #       global:
+  #         server_tls_sslmode: "verify-ca"
+  #         max_client_conn: "200"
+  #         default_pool_size: "200"
+  #         min_pool_size: "20"
+  #         stats_users: "_crunchypgbouncer,monitor"
+  #         auth_dbname: "discourse"
+  #       databases:
+  #         discourse: "host=db-discourse-primary port=5432 dbname=discourse"
+  #         discourse_read: "host=db-discourse-replicas port=5432 dbname=discourse"
+  #     containers:
+  #     - name: exporter-monitor
+  #       image: prometheuscommunity/pgbouncer-exporter
+  #       env:
+  #       - name: PGBOUNCER_EXPORTER_CONNECTION_STRING
+  #         value: "postgres://monitor:root1234@localhost:5432/pgbouncer?"
+  #       ports:
+  #       - name: tcp-monitor
+  #         containerPort: 9127
+  #         protocol: TCP
+  #     affinity:
+  #       podAntiAffinity:
+  #         preferredDuringSchedulingIgnoredDuringExecution:
+  #         - weight: 1
+  #           podAffinityTerm:
+  #             topologyKey: kubernetes.io/hostname
+  #             labelSelector:
+  #               matchLabels:
+  #                 postgres-operator.crunchydata.com/cluster: db-discourse
+  #                 postgres-operator.crunchydata.com/role: pgbouncer
+  # imagePullSecrets:
+  # - name: regcred
+  # monitoring:
+  #   pgmonitor:
+  #     exporter: {} # image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-5.4.1-0

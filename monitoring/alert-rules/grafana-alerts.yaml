@@ -1,0 +1,188 @@
+apiVersion: 1
+groups:
+- orgId: 1
+  name: test-rule
+  folder: Test_folder
+  interval: 1m
+  rules:
+  - uid: c4d48a86-f9d1-4386-9cb2-2c781b66a794
+    title: Test rule cpu node
+    condition: B
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: prometheus
+      model:
+        editorMode: code
+        expr: sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate) by (node)
+        hide: false
+        intervalMs: 1000
+        legendFormat: __auto
+        maxDataPoints: 43200
+        range: true
+        refId: A
+    - refId: B
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 10
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params: []
+          reducer:
+            params: []
+            type: avg
+          type: query
+        datasource:
+          name: Expression
+          type: __expr__
+          uid: __expr__
+        expression: C
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: B
+        type: threshold
+    - refId: C
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params: []
+          reducer:
+            params: []
+            type: avg
+          type: query
+        datasource:
+          name: Expression
+          type: __expr__
+          uid: __expr__
+        expression: A
+        intervalMs: 1000
+        maxDataPoints: 43200
+        reducer: last
+        refId: C
+        settings:
+          mode: ""
+        type: reduce
+    noDataState: NoData
+    execErrState: Error
+    for: 5m
+    annotations:
+      description: test
+      summary: Test cpu over threshold
+    labels:
+      alert: test
+    isPaused: false
+- orgId: 1
+  name: USE_METHOD
+  folder: Node
+  interval: 1m
+  rules:
+  - uid: f6b0c82f-dab4-49ea-9fcd-1983af55d71e
+    title: Node CPU usage
+    condition: B
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: prometheus
+      model:
+        editorMode: code
+        expr: (1- avg by (instance) (irate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[2m]))) * 100
+        hide: false
+        intervalMs: 1000
+        legendFormat: __auto
+        maxDataPoints: 43200
+        range: true
+        refId: A
+    - refId: B
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 60
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params: []
+          reducer:
+            params: []
+            type: avg
+          type: query
+        datasource:
+          name: Expression
+          type: __expr__
+          uid: __expr__
+        expression: C
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: B
+        type: threshold
+    - refId: C
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params: []
+          reducer:
+            params: []
+            type: avg
+          type: query
+        datasource:
+          name: Expression
+          type: __expr__
+          uid: __expr__
+        expression: A
+        intervalMs: 1000
+        maxDataPoints: 43200
+        reducer: last
+        refId: C
+        settings:
+          mode: ""
+        type: reduce
+    noDataState: NoData
+    execErrState: Error
+    for: 5m
+    annotations:
+      description: Node {{ $labels.instance }} use CPU {{ humanize (index $values "C").Value }}% which over 60% over 5m
+      summary: Node has overcoming CPU usage
+    labels:
+      alert: node
+    isPaused: false

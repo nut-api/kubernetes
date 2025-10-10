@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: general-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingress
+  servers:
+    - port:
+        number: 80
+        protocol: HTTP
+        name: http
+      hosts:
+        - "*"
+      tls:
+        httpsRedirect: true

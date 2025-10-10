@@ -1,0 +1,32 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerSet
+metadata:
+  name: release-runner
+  namespace: actions-runner-system
+spec:
+  replicas: 1
+  ephemeral: true
+  dockerMTU: 1450
+  organization: "apiplustech"
+  dockerdWithinRunnerContainer: true
+  image: ghcr.io/apiplustech/actions-runner-dind:latest
+  labels:
+  - release-runner
+  selector:
+    matchLabels:
+      app: release-runner
+  serviceName: release-runner
+  template:
+    metadata:
+      labels:
+        app: release-runner
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: runner
+        env:
+        - name: DISABLE_RUNNER_UPDATE
+          value: "true"
+      imagePullSecrets:
+      - name: regcred

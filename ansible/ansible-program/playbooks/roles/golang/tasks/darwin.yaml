@@ -1,0 +1,5 @@
+- name: Install golang
+  become: false
+  community.general.homebrew:
+    name: go
+    state: present

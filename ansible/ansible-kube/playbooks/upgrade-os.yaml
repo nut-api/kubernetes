@@ -1,0 +1,5 @@
+- hosts: k8s_nodes
+  become: yes
+  serial: 1
+  roles:
+  - upgrade-os

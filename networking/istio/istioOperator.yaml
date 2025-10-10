@@ -1,0 +1,27 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: istiocontrolplane
+spec:
+  values:
+    global:
+      tracer:
+        zipkin:
+          address: simplest-collector.observability.svc.cluster.local:9411
+  meshConfig:
+    defaultConfig:
+      tracing:
+        sampling: 100
+        zipkin:
+          address: simplest-collector.observability.svc.cluster.local:9411
+    accessLogFile: /dev/stdout
+    extensionProviders:
+    - name: otel
+      envoyOtelAls:
+        service: simplest-collector.observability.svc.cluster.local
+        port: 4317
+    defaultProviders:
+      accessLogging:
+      - envoy
+      - otel

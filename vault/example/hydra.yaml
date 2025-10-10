@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra
+  labels:
+    app: hydra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hydra
+  template:
+    metadata:
+      labels:
+        app: hydra
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/tls-skip-verify: "true"
+        vault.hashicorp.com/agent-inject-status: 'update'
+        vault.hashicorp.com/role: "sql-role"
+        # Secret name (agent-inject-secret-<name>)
+        vault.hashicorp.com/agent-inject-secret-config: 'database/creds/sql-role'
+        # Environment variable export template. Secret will injected in /vault/sercrets/<name>
+        # Data inside secret (agent-inject-template-<name>)
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{ with secret "database/creds/sql-role" -}}
+            export DSN="postgres://{{ .Data.username }}:{{ .Data.password }}@oauth-primary.default.svc:5432/oauth"
+          {{- end }}
+    spec:
+      containers:
+        - name: hydra
+          image: oryd/hydra:v1.11.7
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 4444
+              name: public
+            - containerPort: 4445
+              name: admin
+            - containerPort: 5555
+              name: token-user
+          command:
+            [
+              'sh', '-c',
+              'source /vault/secrets/config;
+              hydra migrate -c /etc/config/hydra/hydra.yml sql -e --yes;
+              hydra serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http --dangerous-allow-insecure-redirect-urls http://10.0.2.2:8000/callback',
+            ]
+          volumeMounts:
+            - mountPath: "/etc/config/hydra"
+              name: hydra-config
+          readinessProbe:
+            httpGet:
+              path: /health/alive
+              port: admin
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/ready
+              port: admin
+            periodSeconds: 5
+            failureThreshold: 10
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: admin
+            failureThreshold: 30
+            periodSeconds: 10
+      serviceAccountName: dynamic-postgres
+      volumes:
+        - name: "hydra-config"
+          configMap:
+            name: ory-hydra-config
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dynamic-postgres
+  labels:
+    app: dynamic-postgres
