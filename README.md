@@ -1,4 +1,4 @@
-# 🧭 Kubernetes Journey
+# Kubernetes Journey
 
 This repository collects all my work, experiments, and projects related to **Kubernetes**.  
 It serves as a personal knowledge base and a place to document what I’ve learned while exploring different aspects of the Kubernetes ecosystem.
